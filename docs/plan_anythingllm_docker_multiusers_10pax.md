@@ -12,7 +12,7 @@
 La **Plataforma IA Local** ha sido adaptada para operar en modo **Multi-Usuario Concurrente (10 usuarios)** mediante el despliegue del contenedor oficial de **AnythingLLM en Docker** (`mintplexlabs/anythingllm`), integrando:
 1. **Gobierno de Concurrencia y VRAM Calibrada:** Eliminación del riesgo de desbordamiento de memoria (*CUDA Out of Memory*) en la GPU NVIDIA GTX 1650 (4 GB VRAM) mediante el dimensionamiento de modelos 3B cuantizados (`qwen2.5:3b` y `qwen2.5-coder:3b`), limitación de contexto (`num_ctx: 2048`) y parametrización de dos slots paralelos (`OLLAMA_NUM_PARALLEL=2`).
 2. **Workspaces Departamentales con Aislamiento de Roles:** Cuatro espacios de trabajo especializados (Documentos Word/PDF, Hojas de Cálculo Excel/CSV, Presentaciones PPTX y Programación Ligera en Python) con system prompts deterministas y permisos diferenciados (*Admin*, *Manager*, *Default User*).
-3. **Saneamiento Quirúrgico de `/ECC`:** Reducción del footprint de 366.5 MB a 16.7 MB tras archivar de forma preventiva el 100% de los archivos heredados en `backup/ecc_legacy_full_backup.tar.gz` (83.8 MB) y aislar los componentes operativos en `core/ecc/`.
+3. **Saneamiento Quirúrgico y Gobernanza de `/ECC`:** Separación estricta entre el arnés del proyecto (`ECC/`) y el arnés de producción (`ai-harness/ecc/`), blindadas con acceso criptográfico exclusivo para el CEO.
 4. **Integración con el Servidor MCP y Gateway Zero-Chatter:** Conexión nativa con `mcp_server.py` y `servidor_api.py` para exportación física, extracción pixel-perfect de imágenes y prevención de preámbulos conversacionales.
 
 ---
@@ -97,19 +97,19 @@ Establece las variables de entorno de Windows para el motor de inferencia:
 
 ---
 
-## 5. Suite Curada `/ECC` (`core/ecc/`)
+## 5. Suite Curada `/ECC` para Producción (`ai-harness/ecc/`)
 
 Se organizaron los activos de alto valor requeridos para producción:
-- **`core/ecc/agents/`:** `doc-updater.md`, `spec-miner.md`, `code-reviewer.md`, `silent-failure-hunter.md`, `planner.md`, `performance-optimizer.md`, `security-reviewer.md`.
-- **`core/ecc/skills/`:**
+- **`ai-harness/ecc/agents/`:** `doc-updater.md`, `spec-miner.md`, `code-reviewer.md`, `silent-failure-hunter.md`, `planner.md`, `performance-optimizer.md`, `security-reviewer.md`.
+- **`ai-harness/ecc/skills/`:**
   - `document-processing`: Procesamiento documental y sanitización Zero-Chatter.
   - `presentation-slides`: Maquetación y estructura de diapositivas.
   - `spreadsheet-analysis`: Validación aritmética y tablas Markdown para hojas de cálculo.
   - `python-automation`: Estándares de calidad y automatización en Python 3.13.
   - `verification-loop`: Calidad en 4 fases (Build, Visual, Pureza, Compilación).
   - `security-review`: Seguridad en APIs y sanitización contra inyecciones.
-- **`core/ecc/workspaces/`:** Esquemas JSON predefinidos listos para importar a AnythingLLM.
-- **`core/ecc/mcp/`:** Definición de herramientas MCP para AnythingLLM.
+- **`ai-harness/ecc/workspaces/`:** Esquemas JSON predefinidos listos para importar a AnythingLLM.
+- **`ai-harness/ecc/mcp/`:** Definición de herramientas MCP para AnythingLLM.
 
 ---
 

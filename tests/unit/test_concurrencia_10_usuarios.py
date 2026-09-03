@@ -88,8 +88,8 @@ def test_workspaces_configuracion_valida():
     from pathlib import Path
     import json
 
-    ruta_ws = Path("core/ecc/workspaces")
-    assert ruta_ws.exists(), "La carpeta core/ecc/workspaces debe existir"
+    ruta_ws = Path("ai-harness/ecc/workspaces")
+    assert ruta_ws.exists(), "La carpeta ai-harness/ecc/workspaces debe existir"
 
     archivos_ws = list(ruta_ws.glob("*.json"))
     assert len(archivos_ws) >= 4, f"Se esperaban al menos 4 workspaces, encontrados {len(archivos_ws)}"
