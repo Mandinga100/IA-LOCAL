@@ -1,0 +1,26 @@
+{
+  "_comment": [
+    "Copiar a .claude/bridge.json para activar el orchestration bridge EN ESTE",
+    "PROYECTO. Sin este archivo el bridge esta apagado y el harness funciona",
+    "exactamente igual que sin el.",
+    "",
+    "Borrar el archivo, o poner enabled:false, lo desactiva por completo: no",
+    "quedan hooks a medio correr ni estado que limpiar. Es reversible.",
+    "",
+    "Override de sesion, sin tocar este archivo:",
+    "  ECC_BRIDGE=on   fuerza activado",
+    "  ECC_BRIDGE=off  fuerza apagado (gana sobre enabled:true)"
+  ],
+
+  "enabled": true,
+
+  "_scope_comment": [
+    "Opcional. Acota el bridge a rutas concretas: una tarea que no toque",
+    "ninguna de estas rutas no entra en el flujo, aunque enabled sea true.",
+    "El scope se respeta incluso con ECC_BRIDGE=on. Omitirlo = todo el repo."
+  ],
+  "scope": [
+    "src/**",
+    "scripts/**"
+  ]
+}

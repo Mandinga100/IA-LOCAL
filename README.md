@@ -3,10 +3,11 @@
 [![GitHub](https://img.shields.io/badge/GitHub-Mandinga100%2FIA--LOCAL-181717.svg?logo=github)](https://github.com/Mandinga100/IA-LOCAL)
 ![Python](https://img.shields.io/badge/Python-3.13.14-blue.svg)
 ![OS](https://img.shields.io/badge/Platform-Windows%2010%20%2F%2011%2064--bit-0078D6.svg)
-![Tests](https://img.shields.io/badge/Tests-154%20passed%20%7C%201%20skipped-success.svg)
+![Tests](https://img.shields.io/badge/Tests-159%20passed%20%7C%201%20skipped-success.svg)
 ![AnythingLLM](https://img.shields.io/badge/GUI-AnythingLLM%20Multi--User%20Docker-orange.svg)
 ![Hardware](https://img.shields.io/badge/Hardware-Dual%20(GTX%201650%204GB%20%7C%20RTX%20PRO%204000%2024GB)-brightgreen.svg)
 ![Governance](https://img.shields.io/badge/Governance-ECC%20Curated%20(3.5MB)-purple.svg)
+![Security](https://img.shields.io/badge/CEO%20Auth-SHA256%20Cryptographic%20Guard-red.svg)
 
 Sistema industrial, soberano y desacoplado para el procesamiento masivo, corrección ortotipográfica y síntesis de documentos ofimáticos con **Modelos de Lenguaje Locales (LLM)**, operando **100% desconectado de la nube (offline)** sobre **Windows 10 / 11 64-bit**.
 
@@ -28,11 +29,15 @@ Soporta despliegue multi-usuario empresarial (10+ usuarios concurrentes) mediant
 3. **Arquitectura Bi-Entorno Calibrada:**
    - **Perfil MVP Local (`MVP/`):** Optimizado para **NVIDIA GeForce GTX 1650 (4 GB VRAM)**, modelos 3B (`qwen2.5:3b`), contexto de 2048 tokens, 2 slots paralelos y consumo de VRAM menor a 2.84 GB (100% en GPU).
    - **Perfil Producción (`produccion/`):** Diseñado para **PNY Quadro RTX PRO 4000 24 GB GDDR7 ECC** (arquitectura Blackwell), Intel Core i9-14900 (24 núcleos) y 128 GB RAM DDR5, con modelos 14B y 32B (`qwen2.5:14b`, `qwen2.5-coder:32b`, `deepseek-r1:14b`, `qwen2.5vl:7b`), contexto de 32K a 65K tokens, FlashAttention y 4 slots paralelos.
-4. **Protocolo Zero-Chatter (Pureza Documental):** Poda automática de saludos, notas conversacionales y bloques `<think>` para compilación física sin contaminación de metatexto.
-5. **Preservación Visual Pixel-Perfect:** Extracción de imágenes nativas en PDF/DOCX con huella SHA-256 e inserción proporcional en documentos reconstruidos.
-6. **Servidor MCP Oficial (`mcp_server.py`):** Expone 14 herramientas nativas para AnythingLLM (conversión, resumen ejecutivo, marcas de agua, cirugía de imágenes y telemetría de GPU).
-7. **Arnés `/ECC` Curado y Saneado:** Reducción del 99% de ruido (de 366 MB a 3.5 MB), preservando únicamente los 8 agentes y 14 skills esenciales para ofimática, presentaciones y código.
-8. **Motor de Backup Consolidado:** Generador de respaldo comprimido con GZIP nivel 9 en `backup/` (~1.72 MB) con rotación automática de copias obsoletas.
+4. **Inmutabilidad y Gobernanza /ECC (Exclusividad CEO):**
+   - La carpeta `/ECC` en la raíz está reservada netamente para el proyecto y es estrictamente inmutable.
+   - La carpeta `ai-harness/ecc/` es la que se utilizará en producción en la máquina real con IA local.
+   - Ambas zonas están blindadas criptográficamente (`core/ecc_guard.py` y `scripts/verificar_permisos_ecc.ps1`): **únicamente el CEO autenticado mediante verificación SHA-256 tiene autorización de edición**. El nombre nunca se encuentra hardcodeado en texto plano en el repositorio.
+5. **Protocolo Zero-Chatter (Pureza Documental):** Poda automática de saludos, notas conversacionales y bloques `<think>` para compilación física sin contaminación de metatexto.
+6. **Preservación Visual Pixel-Perfect:** Extracción de imágenes nativas en PDF/DOCX con huella SHA-256 e inserción proporcional en documentos reconstruidos.
+7. **Servidor MCP Oficial (`mcp_server.py`):** Expone 14 herramientas nativas para AnythingLLM (conversión, resumen ejecutivo, marcas de agua, cirugía de imágenes y telemetría de GPU).
+8. **Arnés `/ECC` Curado y Saneado:** Reducción del 99% de ruido (de 366 MB a 3.5 MB), preservando únicamente los 8 agentes y 14 skills esenciales para ofimática, presentaciones y código.
+9. **Motor de Backup Consolidado:** Generador de respaldo comprimido con GZIP nivel 9 en `backup/` (~1.72 MB) con rotación automática de copias obsoletas.
 
 ---
 

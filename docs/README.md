@@ -22,6 +22,7 @@ Este sistema opera en **Windows 10 / 11 64-bit**, 100% desconectado de la nube (
 | **Guía Operativa y Manual de Uso** | [guia_operativa.md](guia_operativa.md) | Comandos para Windows 10 PowerShell, flags de CLI y troubleshooting. |
 | **Reportes de Ejecución MVP** | [reportes_ejecucion_mvp/README.md](reportes_ejecucion_mvp/README.md) | Auditorías forenses y telemetría de GPU GTX 1650. |
 | **Auditoría 360° y Transformaciones** | [auditoria_360_y_transformaciones/README.md](auditoria_360_y_transformaciones/README.md) | Análisis multidimensional y matriz de compatibilidad para 14 formatos. |
+| **Gobernanza /ECC y Autorización CEO** | [gobernanza_harness_ecc_ceo.md](gobernanza_harness_ecc_ceo.md) | Política de inmutabilidad para ECC/ y ai-harness/ecc con verificación criptográfica del CEO. |
 
 ---
 

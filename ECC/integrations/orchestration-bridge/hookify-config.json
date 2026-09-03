@@ -1,0 +1,143 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "_comment": [
+    "ECC Orchestration Bridge — fragmento de hooks para fusionar en .claude/settings.json.",
+    "",
+    "OPT-IN: fusionar esto NO activa el bridge. Todos los hooks consultan",
+    "scripts/lib/bridge-config.js y pasan de largo mientras el bridge este",
+    "apagado, que es el default. Para activarlo hace falta un acto explicito:",
+    "  - por proyecto : .claude/bridge.json con {\"enabled\": true}",
+    "  - por sesion   : ECC_BRIDGE=on  (o ECC_BRIDGE=off para desactivar)",
+    "  - por tarea    : \"scope\" en bridge.json acota a rutas concretas",
+    "Con el bridge apagado no se escribe ledger, no se emite salida y el stdin",
+    "vuelve intacto: el harness se comporta como si el bridge no existiera.",
+    "",
+    "Excepcion documentada: pre:bridge:opencode-gate sigue activo aunque el",
+    "bridge este apagado, pero SOLO reacciona a invocaciones de open-code.sh.",
+    "Ejecutar el script del bridge es en si mismo un opt-in, y apagar una",
+    "comprobacion de seguridad justo ahi seria el peor momento posible.",
+    "Formato: mismo wrapper run-with-flags.js que usa hooks/hooks.json, para que",
+    "ECC_HOOK_PROFILE y ECC_DISABLED_HOOKS sigan funcionando.",
+    "",
+    "NOTA SOBRE PostToolUseFailure: schemas/hooks.schema.json de este repo lo acepta,",
+    "pero no es un evento que el runtime de Claude Code emita hoy. Por eso la",
+    "deteccion de fallo esta DUPLICADA: post-opencode-verify.js inspecciona",
+    "tool_response.success / exit_code por su cuenta y no depende del evento.",
+    "La entrada PostToolUseFailure queda registrada solo para compatibilidad futura;",
+    "si nunca dispara, el bridge sigue siendo correcto.",
+    "",
+    "Los comandos usan rutas relativas al root del repo. Para distribucion como",
+    "plugin hay que envolverlos con plugin-hook-bootstrap.js igual que hooks/hooks.json."
+  ],
+
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node scripts/hooks/run-with-flags.js session:bridge:init integrations/orchestration-bridge/scripts/bridge-session-init.js standard,strict",
+            "async": true,
+            "timeout": 10
+          }
+        ],
+        "description": "Bridge: carga model-route.yaml, abre run-ledger.jsonl, fija run_id",
+        "id": "session:bridge:init"
+      }
+    ],
+
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node scripts/hooks/run-with-flags.js pre:bridge:opencode-gate integrations/orchestration-bridge/scripts/pre-opencode-gate.js standard,strict",
+            "timeout": 5
+          }
+        ],
+        "description": "Bridge gate: autentica, valida allowlist, decide motor (Antigravity solo con doble cerrojo), aplica cost cap",
+        "id": "pre:bridge:opencode-gate"
+      }
+    ],
+
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node scripts/hooks/run-with-flags.js post:bridge:verify integrations/orchestration-bridge/scripts/post-opencode-verify.js standard,strict",
+            "async": true,
+            "timeout": 30
+          }
+        ],
+        "description": "Bridge verify: gates deterministas -> triage (sonnet-5) -> validacion final (opus-4-8) -> decision",
+        "id": "post:bridge:verify"
+      }
+    ],
+
+    "PostToolUseFailure": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node scripts/hooks/run-with-flags.js post:bridge:failure integrations/orchestration-bridge/scripts/post-opencode-failure.js standard,strict",
+            "async": true,
+            "timeout": 20
+          }
+        ],
+        "description": "Bridge retry policy (compat futura; la deteccion real vive en post:bridge:verify)",
+        "id": "post:bridge:failure"
+      }
+    ],
+
+    "Stop": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node scripts/hooks/run-with-flags.js stop:bridge:metrics integrations/orchestration-bridge/scripts/bridge-metrics-flush.js standard,strict",
+            "async": true,
+            "timeout": 15
+          }
+        ],
+        "description": "Bridge: vuelca metricas del run al ecc-metrics-bridge",
+        "id": "stop:bridge:metrics"
+      }
+    ],
+
+    "SessionEnd": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node scripts/hooks/run-with-flags.js session:bridge:close integrations/orchestration-bridge/scripts/bridge-session-close.js standard,strict",
+            "async": true,
+            "timeout": 15
+          }
+        ],
+        "description": "Bridge: cierra el ledger y emite el resumen del run",
+        "id": "session:bridge:close"
+      }
+    ]
+  },
+
+  "env": {
+    "ECC_BRIDGE": "off",
+    "ECC_BRIDGE_POLICY": "integrations/orchestration-bridge/model-route.yaml",
+    "ECC_BRIDGE_LEDGER": "~/.claude/metrics/run-ledger.jsonl",
+    "ECC_SCORE_THRESHOLD": "0.70",
+    "ECC_ALLOW_ANTIGRAVITY": "0"
+  },
+
+  "_env_secrets_note": [
+    "ECC_OPENCODE_TOKEN y ECC_ANTIGRAVITY_TOKEN NO van aqui.",
+    "settings.json se commitea. Exportalos desde el entorno o un gestor de secretos.",
+    "pre-opencode-gate.js aborta si detecta un token con pinta de literal en el repo."
+  ]
+}

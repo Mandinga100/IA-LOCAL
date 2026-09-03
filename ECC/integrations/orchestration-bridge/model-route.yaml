@@ -1,0 +1,256 @@
+# ECC Orchestration Bridge — Model Route Policy (artefacto B)
+#
+# Fuente de verdad del enrutado. La lee `route-task` en PreToolUse y
+# `post-opencode-verify` en PostToolUse.
+#
+# IDs DE MODELO — leer antes de desplegar:
+#   Los IDs de Claude están verificados. Los de OpenCode NO: el brief mencionó
+#   "Deepseek v4 Flash", "Big Pícke" y "hy3", que no corresponden a slugs que se
+#   puedan confirmar desde aquí. Por eso van por variable de entorno y llevan
+#   `verified: false`. Ponlos a `true` sólo cuando `open-code.sh models --list`
+#   confirme el slug real contra tu instancia.
+
+version: 1
+schema: ecc.model-route/v1
+updated: 2026-07-20
+
+defaults:
+  score_threshold: 0.70          # < umbral ⇒ human_review (invariante I3)
+  auto_approve_threshold: 0.85
+  max_retries: 2
+  timeout_s: 300
+  cost_cap_usd: 0.75             # por paso; superarlo degrada al fallback barato
+  ledger: ~/.claude/metrics/run-ledger.jsonl
+
+models:
+  # --- Claude Code (orquestación y verificación) ---
+  claude_fable:
+    id: claude-fable-5
+    engine: claude
+    verified: true
+    role: planificación de alto nivel, decisiones ambiguas
+  claude_sonnet:
+    id: claude-sonnet-5
+    engine: claude
+    verified: true
+    role: triage, extracción de checklist, diagnóstico de fallos
+  claude_opus:
+    id: claude-opus-4-8
+    engine: claude
+    verified: true
+    role: validación final, revisión de seguridad
+
+  # --- OpenCode (generación) — slugs SIN verificar ---
+  oc_bulk:
+    id: ${ECC_OC_MODEL_BULK}
+    engine: opencode
+    verified: false
+    note: 'brief: "Deepseek v4 Flash" (free). Confirmar slug antes de producción.'
+  oc_refactor:
+    id: ${ECC_OC_MODEL_REFACTOR}
+    engine: opencode
+    verified: false
+    note: 'brief: "Big Pícke" (free). Slug no confirmable; probable transcripción.'
+  oc_script:
+    id: ${ECC_OC_MODEL_SCRIPT}
+    engine: opencode
+    verified: false
+    note: 'brief: "hy3" (free). Slug no confirmable; probable transcripción.'
+
+  # --- Antigravity — apagado por defecto ---
+  antigravity_scaffold:
+    id: ${ECC_ANTIGRAVITY_MODEL}
+    engine: antigravity
+    verified: false
+    requires_flag: experimental
+
+# ---------------------------------------------------------------------------
+# Reglas. Se evalúan en orden; gana la primera cuyo `when` case.
+# ---------------------------------------------------------------------------
+rules:
+
+  - id: r1-bulk-codegen
+    when:
+      task_type: [bulk_codegen, boilerplate, codemod]
+      files_touched: '>= 5'
+    use: oc_bulk
+    fallback: claude_sonnet
+    max_retries: 2
+    timeout_s: 420
+    cost_cap_usd: 0.30
+    why: >
+      Volumen alto de escritura mecánica. El coste por token domina y la
+      corrección es verificable a posteriori por gates deterministas.
+
+  - id: r2-refactor-mecanico
+    when:
+      task_type: [refactor, rename, api_migration]
+      risk_class: [low, medium]
+    use: oc_refactor
+    fallback: oc_bulk
+    max_retries: 2
+    timeout_s: 300
+    cost_cap_usd: 0.30
+    why: >
+      Transformación con forma conocida. Si el modelo de refactor falla, el
+      de bulk suele bastar con un prompt más explícito.
+
+  - id: r3-scripting-migraciones
+    when:
+      task_type: [scripting, db_migration, ci_config]
+    use: oc_script
+    fallback: claude_sonnet
+    max_retries: 1
+    timeout_s: 240
+    cost_cap_usd: 0.30
+    escalate_on_fail: claude_sonnet
+    why: >
+      Un solo reintento: los scripts fallan por contexto que falta, no por
+      mala suerte de muestreo. Reintentar sin contexto nuevo sólo quema cuota.
+
+  - id: r4-triage-verificacion
+    when:
+      phase: verify
+      stage: triage
+    use: claude_sonnet
+    fallback: claude_opus
+    max_retries: 1
+    timeout_s: 120
+    cost_cap_usd: 0.20
+    emits: [checks, risk_class, needs_deep_review]
+    why: >
+      El triage lee el diff completo — es el paso caro en tokens de entrada.
+      Ponerlo en el modelo intermedio y dejar que decida si hace falta Opus
+      es lo que evita pagar Opus sobre todo el diff.
+
+  - id: r5-validacion-final-critica
+    when:
+      phase: verify
+      stage: final
+      any_of:
+        risk_class: [critical]
+        touches_paths: ['.github/**', 'scripts/hooks/**', 'install.*', '**/auth/**', '**/*secret*']
+        triage_says: needs_deep_review
+    use: claude_opus
+    fallback: null            # sin fallback: si Opus no puede, decide un humano
+    max_retries: 1
+    timeout_s: 240
+    cost_cap_usd: 1.50
+    on_fallback_exhausted: human_review
+    why: >
+      Aquí un falso negativo cuesta más que cualquier ahorro de tokens.
+      El fallback correcto es una persona, no un modelo más barato.
+
+  - id: r6-planificacion-alto-nivel
+    when:
+      phase: plan
+      any_of:
+        risk_class: [critical]
+        ambiguity: high
+    use: claude_fable
+    fallback: claude_opus
+    max_retries: 1
+    timeout_s: 300
+    cost_cap_usd: 1.00
+    why: >
+      Sólo cuando el arreglo exige rediseño, no cuando basta con corregir
+      código. Planificar lo ya diagnosticado es gasto puro.
+
+  - id: r7-antigravity-experimental
+    when:
+      task_type: [scaffold_prototype]
+      experimental: true                 # exigido por el brief
+      env.ECC_ALLOW_ANTIGRAVITY: '1'     # segundo cerrojo, fuera del payload
+    use: antigravity_scaffold
+    fallback: oc_bulk
+    max_retries: 0
+    timeout_s: 180
+    cost_cap_usd: 0.10
+    sandbox: true
+    write_scope: ['scaffold/**', 'examples/**']
+    never_merge_without_human: true
+    why: >
+      Doble cerrojo a propósito: un flag en el payload es falsificable por
+      cualquiera que construya la petición. La var de entorno la controla
+      quien despliega, no quien pide.
+
+  - id: r8-default
+    when: { always: true }
+    use: claude_sonnet
+    fallback: claude_opus
+    max_retries: 1
+    timeout_s: 300
+    cost_cap_usd: 0.50
+    why: Regla de cierre. Si nada casó, la tarea no está bien clasificada.
+
+# ---------------------------------------------------------------------------
+# Gates deterministas — corren ANTES de gastar cualquier token de LLM.
+# ---------------------------------------------------------------------------
+gates:
+  - id: lint
+    cmd: npx eslint .
+    weight: 0.15
+    blocking: false
+  - id: tests
+    cmd: node tests/run-all.js
+    weight: 0.35
+    blocking: true
+  - id: security
+    cmd: node .opencode/dist/tools/security-audit.js
+    weight: 0.35
+    blocking: true
+    veto: true          # un fail aquí anula el score agregado (invariante I4)
+  - id: markdown
+    cmd: npx markdownlint-cli '**/*.md' --ignore node_modules
+    weight: 0.15
+    blocking: false
+
+# ---------------------------------------------------------------------------
+# Matriz de decisión. Estructurada a propósito: nada de expresiones en string.
+# Una condición que hay que evaluar es una condición que se puede inyectar, y
+# esto decide si algo se mergea. Gana la primera regla que case.
+decision_matrix:
+  - id: d1-security-veto
+    if: { security_veto: true }
+    then: human_review
+    reason: un fail de seguridad anula el score agregado (invariante I4)
+  - id: d2-approve
+    if: { min_score: 0.85, max_fails: 0 }
+    then: approve
+  - id: d3-auto-fix
+    if: { min_score: 0.70 }
+    then: auto_fix
+  - id: d4-human
+    if: { always: true }
+    then: human_review
+    reason: por debajo del umbral decide una persona (invariante I3)
+
+# Cómo se calcula `aggregate_score`:
+#   - veto de seguridad            -> 0.0 y no se invoca ningún LLM
+#   - si corrió la validación final -> el score de la validación final
+#   - si sólo corrió el triage      -> el score del triage
+# Los gates deterministas son precondición, no sumandos: si uno bloqueante
+# falla, no se llega a puntuar.
+
+# ---------------------------------------------------------------------------
+telemetry:
+  emit: [run_id, step, engine, model, model_verified, score, decision,
+         duration_ms, tokens_in, tokens_out, cost_usd_est, retries, artifact_sha256]
+  sinks:
+    - ~/.claude/metrics/run-ledger.jsonl
+    - ~/.claude/metrics/costs.jsonl        # ya lo escribe cost-tracker.js
+  slis:
+    auto_approval_rate: { target: '>= 0.60', window: 7d }
+    human_review_rate:  { target: '<= 0.25', window: 7d }
+    retry_rate:         { target: '<= 0.20', window: 7d }
+    p95_verify_latency: { target: '<= 90s',  window: 7d }
+    cost_per_merged_pr: { target: '<= 1.50 USD', window: 30d }
+
+security:
+  require_auth: true
+  token_env: [ECC_OPENCODE_TOKEN, ECC_ANTIGRAVITY_TOKEN]
+  forbid_token_in_repo: true
+  command_allowlist: [generate, refactor, script, scaffold, models]
+  deny_arbitrary_shell: true
+  artifact_hashing: sha256
+  redact_in_logs: ['*token*', '*secret*', '*_key', 'Authorization']

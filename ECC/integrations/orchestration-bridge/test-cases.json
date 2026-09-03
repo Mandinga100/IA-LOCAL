@@ -1,0 +1,133 @@
+{
+  "_comment": [
+    "5 casos de prueba del bridge: entrada (lo que recibe el hook) y salida esperada",
+    "(lo que Claude Code debe devolver). Se ejecutan con tests/integrations/",
+    "orchestration-bridge.test.js. Los casos 1-4 son deterministas (no llaman a",
+    "ningun LLM: el routing, el gate y la matriz de decision son codigo puro).",
+    "El caso 5 requiere un stub del cliente LLM."
+  ],
+  "schema": "ecc.bridge.testcases/v1",
+  "cases": [
+    {
+      "id": "tc1-bulk-approve",
+      "description": "Generacion masiva limpia: gates verdes, triage alto, aprueba sin Opus",
+      "deterministic": true,
+      "input": {
+        "hook_event_name": "PostToolUse",
+        "tool_name": "Bash",
+        "tool_input": { "command": "integrations/orchestration-bridge/open-code.sh generate --task-type bulk_codegen --prompt-file /tmp/p.md" },
+        "tool_response": {
+          "exit_code": 0,
+          "artifact": {
+            "task_type": "bulk_codegen", "files_touched": 11,
+            "risk_class": "medium", "touches_paths": ["src/lib/parse.js", "src/lib/format.js"]
+          }
+        },
+        "gate_results": { "lint": "pass", "tests": "pass", "security": "pass", "markdown": "warn" },
+        "triage_stub": { "aggregate_score": 0.88, "needs_deep_review": false }
+      },
+      "expected": {
+        "rule_id": "r1-bulk-codegen",
+        "engine": "opencode",
+        "escalated_to_opus": false,
+        "aggregate_score": 0.88,
+        "decision": "approve",
+        "human_review_required": false,
+        "remedial_action": null
+      }
+    },
+
+    {
+      "id": "tc2-security-veto",
+      "description": "Un fail de seguridad manda a humano aunque el resto este verde",
+      "deterministic": true,
+      "input": {
+        "hook_event_name": "PostToolUse",
+        "tool_name": "Bash",
+        "tool_response": { "exit_code": 0, "artifact": { "task_type": "refactor", "files_touched": 3 } },
+        "gate_results": {
+          "lint": "pass", "tests": "pass",
+          "security": "fail", "security_detail": "credencial literal en client.js:41"
+        }
+      },
+      "expected": {
+        "llm_invoked": false,
+        "security_veto": true,
+        "aggregate_score": 0.0,
+        "decision": "human_review",
+        "human_review_required": true,
+        "note": "no se invoca LLM: el veto corta antes del triage"
+      }
+    },
+
+    {
+      "id": "tc3-antigravity-denied-by-default",
+      "description": "experimental=true NO basta: sin ECC_ALLOW_ANTIGRAVITY=1 se deniega y cae a OpenCode",
+      "deterministic": true,
+      "input": {
+        "hook_event_name": "PreToolUse",
+        "tool_name": "Bash",
+        "task": { "task_type": "scaffold_prototype", "experimental": true },
+        "env": { "ECC_ALLOW_ANTIGRAVITY": "0" }
+      },
+      "expected": {
+        "rule_id": "r7-antigravity-experimental",
+        "gate_decision": "deny",
+        "requested_engine": "antigravity",
+        "engine_applied": "opencode",
+        "fallback_applied": "oc_bulk",
+        "reason_contains": "ECC_ALLOW_ANTIGRAVITY"
+      }
+    },
+
+    {
+      "id": "tc4-cost-cap-downgrade",
+      "description": "Coste estimado sobre el cap: degrada al fallback barato y anota la perdida de confianza",
+      "deterministic": true,
+      "input": {
+        "hook_event_name": "PreToolUse",
+        "task": { "task_type": "bulk_codegen", "files_touched": 40, "estimated_cost_usd": 0.94 },
+        "policy_cost_cap_usd": 0.3
+      },
+      "expected": {
+        "gate_decision": "proceed_downgraded",
+        "model_applied": "${ECC_OC_MODEL_BULK}",
+        "cost_capped": true,
+        "confidence_delta": "negative",
+        "ledger_fields_present": ["estimated_cost_usd", "cost_cap_usd", "confidence_delta"],
+        "note": "la degradacion se registra; no se silencia"
+      }
+    },
+
+    {
+      "id": "tc5-critical-escalates-to-opus",
+      "description": "Cambio en scripts/hooks/ fuerza validacion final con Opus; score bajo -> human_review",
+      "deterministic": false,
+      "requires": "stub del cliente LLM (triage y final)",
+      "input": {
+        "hook_event_name": "PostToolUse",
+        "tool_response": {
+          "exit_code": 0,
+          "artifact": {
+            "task_type": "refactor", "files_touched": 2,
+            "touches_paths": ["scripts/hooks/pre-bash-dispatcher.js"]
+          }
+        },
+        "gate_results": { "lint": "pass", "tests": "pass", "security": "pass" },
+        "triage_stub": { "aggregate_score": 0.79, "risk_class": "critical", "needs_deep_review": true },
+        "final_stub": { "aggregate_score": 0.64, "verdict": "insuficiente cobertura del path de fallo" }
+      },
+      "expected": {
+        "triage_model": "claude-sonnet-5",
+        "escalated_to_opus": true,
+        "escalation_rule_id": "r5-validacion-final-critica",
+        "final_model": "claude-opus-4-8",
+        "aggregate_score": 0.64,
+        "decision": "human_review",
+        "human_review_required": true,
+        "fallback_used": null,
+        "note": "r5 no tiene fallback de modelo: por debajo del umbral decide una persona"
+      }
+    }
+  ]
+}

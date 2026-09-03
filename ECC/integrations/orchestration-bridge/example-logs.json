@@ -1,0 +1,183 @@
+{
+  "_comment": [
+    "Muestras de auditoria del bridge. En produccion esto se escribe como JSONL",
+    "(una linea por evento) en ~/.claude/metrics/run-ledger.jsonl. Aqui va como",
+    "array JSON solo para que sea legible y validable en un test.",
+    "Todos los valores numericos son ILUSTRATIVOS: no proceden de una ejecucion real."
+  ],
+  "schema": "ecc.bridge.ledger/v1",
+  "entries": [
+    {
+      "ts": "2026-07-20T09:14:02.118Z",
+      "run_id": "1784592842-40118",
+      "step": "route",
+      "event": "policy_resolved",
+      "task_type": "bulk_codegen",
+      "rule_id": "r1-bulk-codegen",
+      "engine": "opencode",
+      "model": "${ECC_OC_MODEL_BULK}",
+      "model_verified": false,
+      "fallback": "claude-sonnet-5",
+      "max_retries": 2,
+      "timeout_s": 420,
+      "cost_cap_usd": 0.3,
+      "decision": "proceed"
+    },
+    {
+      "ts": "2026-07-20T09:14:02.402Z",
+      "run_id": "1784592842-40118",
+      "step": "pre_gate",
+      "event": "gate_pass",
+      "auth": "bearer_env",
+      "command": "generate",
+      "allowlisted": true,
+      "antigravity_requested": false,
+      "experimental_flag": false,
+      "env_allow_antigravity": "0",
+      "estimated_cost_usd": 0.11,
+      "cost_cap_usd": 0.3,
+      "decision": "proceed"
+    },
+    {
+      "ts": "2026-07-20T09:15:48.930Z",
+      "run_id": "1784592842-40118",
+      "step": "generate",
+      "event": "artifact_produced",
+      "engine": "opencode",
+      "model": "${ECC_OC_MODEL_BULK}",
+      "exit_code": 0,
+      "duration_ms": 106528,
+      "files_touched": 11,
+      "lines_added": 348,
+      "lines_removed": 62,
+      "artifact_sha256": "7c1f0a9b3e2d4a5f8b6c0d1e2f3a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c",
+      "tokens_in": 18240,
+      "tokens_out": 5110,
+      "cost_usd_est": 0.0,
+      "cost_note": "tier free segun el brief; sin verificar contra facturacion real"
+    },
+    {
+      "ts": "2026-07-20T09:15:52.001Z",
+      "run_id": "1784592842-40118",
+      "step": "gates",
+      "event": "deterministic_gates",
+      "results": [
+        { "id": "lint",     "status": "pass", "score": 1.0,  "duration_ms": 4210 },
+        { "id": "tests",    "status": "pass", "score": 1.0,  "duration_ms": 21880, "detail": "412 passed, 0 failed" },
+        { "id": "security", "status": "pass", "score": 1.0,  "duration_ms": 3140 },
+        { "id": "markdown", "status": "warn", "score": 0.7,  "duration_ms": 1902, "detail": "MD013 line-length x3" }
+      ],
+      "llm_invoked": true,
+      "note": "los gates corren antes del LLM; si tests o security fallan no se gasta token"
+    },
+    {
+      "ts": "2026-07-20T09:16:31.774Z",
+      "run_id": "1784592842-40118",
+      "step": "triage",
+      "event": "verification",
+      "engine": "claude",
+      "model": "claude-sonnet-5",
+      "rule_id": "r4-triage-verificacion",
+      "duration_ms": 38900,
+      "tokens_in": 21400,
+      "tokens_out": 1830,
+      "cost_usd_est": 0.078,
+      "risk_class": "medium",
+      "needs_deep_review": false,
+      "checks": [
+        { "name": "style_conventions", "status": "pass", "score": 0.94, "recommendation": "ninguna" },
+        { "name": "acceptance_criteria", "status": "pass", "score": 0.9, "recommendation": "ninguna" },
+        { "name": "test_coverage_delta", "status": "warn", "score": 0.72, "recommendation": "anadir test para la rama de error en parseConfig()" },
+        { "name": "infra_blast_radius", "status": "pass", "score": 1.0, "recommendation": "no toca .github/ ni scripts/hooks/" }
+      ],
+      "aggregate_score": 0.88,
+      "decision": "approve",
+      "escalated_to_opus": false,
+      "escalation_reason": null
+    },
+    {
+      "ts": "2026-07-20T09:16:32.010Z",
+      "run_id": "1784592842-40118",
+      "step": "decision",
+      "event": "final",
+      "aggregate_score": 0.88,
+      "threshold": 0.7,
+      "auto_approve_threshold": 0.85,
+      "security_veto": false,
+      "decision": "approve",
+      "remedial_action": null,
+      "human_review_required": false,
+      "models_used": ["${ECC_OC_MODEL_BULK}", "claude-sonnet-5"],
+      "total_cost_usd_est": 0.078,
+      "total_duration_ms": 149892
+    },
+
+    {
+      "ts": "2026-07-20T11:02:14.556Z",
+      "run_id": "1784599334-41022",
+      "step": "gates",
+      "event": "deterministic_gates",
+      "results": [
+        { "id": "lint",     "status": "pass", "score": 1.0 },
+        { "id": "tests",    "status": "pass", "score": 1.0 },
+        { "id": "security", "status": "fail", "score": 0.0,
+          "detail": "credencial literal en integrations/x/client.js:41",
+          "veto": true }
+      ],
+      "llm_invoked": false,
+      "note": "veto de seguridad: se corta antes del triage, no se gasta ningun token"
+    },
+    {
+      "ts": "2026-07-20T11:02:14.612Z",
+      "run_id": "1784599334-41022",
+      "step": "decision",
+      "event": "final",
+      "aggregate_score": 0.0,
+      "security_veto": true,
+      "decision": "human_review",
+      "remedial_action": "revocar la credencial expuesta antes de tocar el codigo",
+      "human_review_required": true,
+      "note": "invariante I4: un fail de seguridad anula el score agregado"
+    },
+
+    {
+      "ts": "2026-07-20T14:41:09.220Z",
+      "run_id": "1784612469-41890",
+      "step": "pre_gate",
+      "event": "gate_deny",
+      "requested_engine": "antigravity",
+      "experimental_flag": true,
+      "env_allow_antigravity": "0",
+      "decision": "deny",
+      "fallback_applied": "opencode",
+      "reason": "doble cerrojo: el flag del payload vino a true pero ECC_ALLOW_ANTIGRAVITY no esta a 1"
+    },
+
+    {
+      "ts": "2026-07-20T16:08:55.870Z",
+      "run_id": "1784617735-42551",
+      "step": "generate",
+      "event": "artifact_failed",
+      "engine": "opencode",
+      "model": "${ECC_OC_MODEL_SCRIPT}",
+      "exit_code": 1,
+      "retries_used": 1,
+      "max_retries": 1,
+      "error": "migration script referenced unknown table `user_prefs`",
+      "decision": "escalate",
+      "escalated_to": "claude-sonnet-5",
+      "escalation_reason": "reintentos agotados; regla r3 escala en vez de reintentar a ciegas"
+    },
+    {
+      "ts": "2026-07-20T16:09:40.115Z",
+      "run_id": "1784617735-42551",
+      "step": "decision",
+      "event": "final",
+      "aggregate_score": 0.58,
+      "threshold": 0.7,
+      "decision": "human_review",
+      "remedial_action": "el esquema no declara user_prefs; confirmar si falta una migracion previa",
+      "human_review_required": true
+    }
+  ]
+}

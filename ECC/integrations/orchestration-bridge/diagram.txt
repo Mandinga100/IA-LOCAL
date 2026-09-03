@@ -1,0 +1,142 @@
+ECC ORCHESTRATION BRIDGE — DIAGRAMA TÉCNICO (A)
+================================================
+Claude Code = orquestador y verificador. OpenCode = motor de generación.
+Antigravity = fallback experimental, apagado por defecto.
+
+Convención: [H]=hook  [S]=script  [P]=policy  [T]=telemetría  (( ))=servicio externo
+
+
+0. PLANO GENERAL
+----------------
+
+   ┌──────────────────────────────── CLAUDE CODE (orquestador) ─────────────────────────────┐
+   │                                                                                        │
+   │  SessionStart [H] ──► session-start-bootstrap.js                                       │
+   │      └─ carga model-route.yaml [P], abre run-ledger.jsonl [T], fija run_id             │
+   │                                                                                        │
+   │  ┌── ciclo de trabajo ───────────────────────────────────────────────────────────┐     │
+   │  │                                                                               │     │
+   │  │  (1) CLASIFICAR TAREA                                                         │     │
+   │  │      route-task [S] ──► lee model-route.yaml [P]                              │     │
+   │  │      salida: {engine, model, fallback, max_retries, timeout_s, cost_cap_usd}  │     │
+   │  │                                │                                              │     │
+   │  │  (2) PreToolUse [H] ───────────┘  pre-opencode-gate.js                        │     │
+   │  │      · valida auth (token presente, no en disco plano)                        │     │
+   │  │      · valida allowlist de comandos  → deny si no                             │     │
+   │  │      · ¿experimental=true Y allow_antigravity=true? → engine=antigravity      │     │
+   │  │        si no → engine permanece opencode  (DEFAULT: NUNCA antigravity)        │     │
+   │  │      · presupuesto: coste_estimado > cost_cap → degrada a modelo barato        │     │
+   │  │        y anota confidence_delta en el ledger                                   │     │
+   │  │                                │                                              │     │
+   │  │                                ▼                                              │     │
+   │  │  (3) GENERACIÓN            open-code.sh [S]                                   │     │
+   │  │      ├──────────────► (( OpenCode CLI / HTTP ))                               │     │
+   │  │      │                   modelos: bulk | refactor | script                    │     │
+   │  │      └── (solo si gate lo autorizó) ──► (( Antigravity ))  experimental       │     │
+   │  │                                │                                              │     │
+   │  │      artefacto: {diff, files[], stdout, exit_code, sha256, duration_ms}       │     │
+   │  │                                │                                              │     │
+   │  │  (4) PostToolUse [H] ──────────┘  post-opencode-verify.js                     │     │
+   │  │      · exit_code != 0  ó  tool_response.success == false                      │     │
+   │  │           └──► RAMA FALLO (5b)                                                 │     │
+   │  │      · exit_code == 0 └──► RAMA VERIFICACIÓN (5a)                              │     │
+   │  │                                                                               │     │
+   │  │  (5a) VERIFICACIÓN EN DOS NIVELES                                             │     │
+   │  │       nivel 1 — TRIAGE   ► claude-sonnet-5                                    │     │
+   │  │            entrada: diff + checklist del PR/issue                             │     │
+   │  │            salida:  checks[] {name,status,score}, risk_class, needs_deep       │     │
+   │  │            gates locales que corren ANTES del modelo (baratos, deterministas): │     │
+   │  │              lint  ─ eslint                                                    │     │
+   │  │              tests ─ node tests/run-all.js                                     │     │
+   │  │              sec   ─ AgentShield / security-audit                              │     │
+   │  │            si algún gate determinista falla → no se gasta token de LLM         │     │
+   │  │                                │                                              │     │
+   │  │            needs_deep == false ─┴──► DECISIÓN                                  │     │
+   │  │            needs_deep == true                                                  │     │
+   │  │                 │                                                              │     │
+   │  │       nivel 2 — VALIDACIÓN FINAL ► claude-opus-4-8                            │     │
+   │  │            solo diff + hallazgos del triage (NO todo el repo)                  │     │
+   │  │            salida: verdict, score final, remedial_action                       │     │
+   │  │                                │                                              │     │
+   │  │       nivel 3 — PLANIFICACIÓN  ► claude-fable-5   (condicional)                │     │
+   │  │            se invoca cuando risk_class=critical Y el arreglo exige rediseño,   │     │
+   │  │            no cuando solo hay que corregir código                              │     │
+   │  │                                                                               │     │
+   │  │  (5b) RAMA FALLO   PostToolUseFailure [H] (schema ECC) + detección inline      │     │
+   │  │       retries < max_retries ──► re-prompt a OpenCode con el error concreto     │     │
+   │  │       retries agotados       ──► escala a claude-sonnet-5 para diagnóstico     │     │
+   │  │       diagnóstico inconcluso ──► human_review                                  │     │
+   │  │                                                                               │     │
+   │  │  (6) DECISIÓN                                                                  │     │
+   │  │       score >= 0.85 y sin fails  ──► approve      (auto-merge si lo permite)   │     │
+   │  │       0.70 <= score < 0.85       ──► auto_fix     (re-run dirigido)            │     │
+   │  │       score <  0.70              ──► human_review (SIEMPRE, no negociable)     │     │
+   │  │       cualquier fail de seguridad──► human_review (ignora el score)            │     │
+   │  │                                                                               │     │
+   │  └───────────────────────────────────────────────────────────────────────────────┘     │
+   │                                                                                        │
+   │  Stop [H] ──► ecc-metrics-bridge.js  + session-activity-tracker.js         [T]          │
+   │  SessionEnd [H] ──► session-end.js  → cierra ledger, emite resumen de run  [T]          │
+   └────────────────────────────────────────────────────────────────────────────────────────┘
+
+
+1. RUTA DE MODELO (resumen ejecutable — la fuente de verdad es model-route.yaml)
+--------------------------------------------------------------------------------
+
+   tipo de tarea              motor      modelo primario    fallback
+   ─────────────────────────  ─────────  ─────────────────  ─────────────────
+   bulk_codegen               opencode   ${OC_MODEL_BULK}   claude-sonnet-5
+   refactor_mecanico          opencode   ${OC_MODEL_BULK}   ${OC_MODEL_REFAC}
+   scripting / migraciones    opencode   ${OC_MODEL_SCRIPT} claude-sonnet-5
+   triage + checklist         claude     claude-sonnet-5    claude-opus-4-8
+   review seguridad / final   claude     claude-opus-4-8    (ninguno: humano)
+   planificación crítica      claude     claude-fable-5     claude-opus-4-8
+   scaffolding experimental   antigravity  n/a              opencode
+
+
+2. SUPERFICIE DE INVOCACIÓN
+---------------------------
+
+   OpenCode
+     CLI   : open-code.sh generate --task-type <t> --model <m> --prompt-file <f>
+     HTTP  : POST ${ECC_OPENCODE_URL}/v1/generate
+             Authorization: Bearer ${ECC_OPENCODE_TOKEN}
+             body {task_type, model, prompt, repo_path, timeout_s}
+             200  {run_id, diff, files[], exit_code, usage{...}}
+
+   Antigravity  (bloqueado salvo experimental=true)
+     HTTP  : POST ${ECC_ANTIGRAVITY_URL}/v1/scaffold
+             Authorization: Bearer ${ECC_ANTIGRAVITY_TOKEN}
+             X-ECC-Experimental: true      ← el gate lo exige, el servidor lo exige
+             body {prompt, sandbox: true, write_scope: "scaffold/**"}
+
+   Claude Code
+     interno: enrutado por model-route.yaml; sin endpoint externo.
+
+
+3. ARCHIVOS DEL PAQUETE
+-----------------------
+   diagram.txt          este archivo
+   model-route.yaml     política de enrutado (B)
+   hookify-config.json  hooks a fusionar en settings.json
+   open-code.sh         invocador de OpenCode + reporte al hook
+   playbook.md          despliegue, pruebas, SLOs, checklist de seguridad (C)
+   example-logs.json    muestras de auditoría JSONL
+   test-cases.json      5 casos de prueba con salida esperada
+
+
+4. INVARIANTES (si se rompe uno, el bridge está mal desplegado)
+---------------------------------------------------------------
+   I1  Ninguna llamada a Antigravity sin experimental=true Y ECC_ALLOW_ANTIGRAVITY=1.
+   I2  Toda decisión escribe una línea en run-ledger.jsonl con {model, score, decision}.
+   I3  score < 0.70  ⇒  decision = human_review. Sin excepción por coste ni por prisa.
+   I4  Un fail de seguridad anula el score agregado.
+   I5  Los gates deterministas (lint/test/sec) corren antes que cualquier LLM.
+   I6  Todo artefacto se registra por sha256 para no re-verificar lo idéntico.
+   I7  Los hooks salen con exit 0 ante error propio: el bridge nunca bloquea la sesión.
+   I8  OPT-IN: sin activación explícita el bridge no hace nada — ni ledger, ni
+       salida, ni efectos. El default es apagado y desactivar es reversible sin
+       dejar estado. Única excepción: el gate de PreToolUse, que sólo reacciona
+       a invocaciones de open-code.sh (ejecutar el script ya es un opt-in).
+   I9  Sin adaptador de verificación no se aprueba nada: se manda a humano.
+       Un verificador que aprueba sin verificar es peor que no tenerlo.
