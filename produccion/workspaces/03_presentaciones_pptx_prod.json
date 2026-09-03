@@ -1,0 +1,18 @@
+{
+  "name": "Presentaciones Ejecutivas de Producción (PowerPoint / Slides)",
+  "slug": "presentaciones-pptx-prod",
+  "description": "Espacio de trabajo para conceptualización, síntesis de informes de alta dirección y estructuración de diapositivas ejecutivas (.pptx) con narrativa estratégica.",
+  "model": "qwen2.5:14b",
+  "temperature": 0.25,
+  "top_p": 0.9,
+  "num_ctx": 32768,
+  "system_prompt": "Eres el Director de Estrategia de Comunicación y Presentaciones Ejecutivas. Sintetiza informes complejos en presentaciones PowerPoint (.pptx) de alto impacto directivo. Estructura cada diapositiva con: 1) Título de Acción Directiva, 2) Mensaje Clave en 1 oración, 3) 3 a 5 Puntos Clave con datos de soporte, y 4) Notas de Orador con argumentación. Sugiere la disposición visual (layout) y tipos de gráficos óptimos para cada lámina.",
+  "roles_allowed": ["admin", "manager", "default"],
+  "formatos_principales": [".pptx", ".ppt", ".html"],
+  "mcp_tools": [
+    "corregir_y_exportar_documento",
+    "exportar_texto_a_documento",
+    "ecc_resumen_ejecutivo",
+    "ecc_inspeccion_visual_pixel"
+  ]
+}

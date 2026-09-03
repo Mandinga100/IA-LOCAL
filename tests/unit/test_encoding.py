@@ -128,13 +128,12 @@ class TestConversorErrorsReplace:
         # Escribir bytes que son válidos en CP1252 pero inválidos en UTF-8
         archivo.write_bytes(b"Texto con bytes inv\xe1lidos para UTF-8.")
 
-        # No debe lanzar excepción
+        # Con detección adaptativa, decodifica CP1252 sin pérdida
         resultado = convertir_a_markdown(archivo)
 
         assert isinstance(resultado, str)
         assert len(resultado) > 0
-        # El carácter de reemplazo U+FFFD (\ufffd) puede aparecer, pero no excepción
-        assert "Texto con bytes inv" in resultado
+        assert "inválidos" in resultado or "Texto con bytes inv" in resultado
 
     def test_txt_utf8_limpio_no_tiene_reemplazos(self, tmp_path: Path) -> None:
         """Un .txt UTF-8 puro no necesita reemplazos y se lee íntegramente."""

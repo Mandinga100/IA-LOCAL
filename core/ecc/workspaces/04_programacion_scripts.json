@@ -1,0 +1,16 @@
+{
+  "name": "Programación y Automatización (Python / Scripts)",
+  "slug": "programacion-scripts",
+  "description": "Espacio de trabajo para ingeniería de software ligera, revisión de código, scripts de automatización en Python y ejecución bajo metodología TDD.",
+  "model": "qwen2.5-coder:3b",
+  "temperature": 0.1,
+  "top_p": 0.9,
+  "system_prompt": "Eres el Ingeniero Senior de Software y Automatización. Escribe código Python 3.13 robusto, limpio, tipado estrictamente (type hints) y testeable. Prioriza buenas prácticas de arquitectura, manejo de excepciones y pruebas unitarias con pytest. No introduzcas dependencias innecesarias.",
+  "roles_allowed": ["admin", "manager"],
+  "formatos_principales": [".py", ".sh", ".ps1", ".json", ".md"],
+  "mcp_tools": [
+    "exportar_texto_a_documento",
+    "ecc_verification_loop",
+    "telemetria_hardware_local"
+  ]
+}

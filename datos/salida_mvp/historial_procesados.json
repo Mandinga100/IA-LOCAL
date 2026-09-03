@@ -1,0 +1,65 @@
+{
+  "bd43a81d4ef8f8cebc5ac1330f3463d7803562a9a273091971fae7915ef5528d": {
+    "archivo_origen": "C:\\Users\\mandi\\Documents\\Proyectos\\Plataforma IA local\\datos\\entrada_mvp\\lote_a_texto\\comunicado_interno.txt",
+    "archivo_destino": "datos\\salida_mvp\\comunicado_interno.txt",
+    "tamano_bytes": 637,
+    "tipo_documento": "general",
+    "modelo": "qwen2.5:3b"
+  },
+  "f941a6e6af33d83edce48011fed1d3bf1ed0cdbff0eea740bec37ffc412495a3": {
+    "archivo_origen": "C:\\Users\\mandi\\Documents\\Proyectos\\Plataforma IA local\\datos\\entrada_mvp\\lote_a_texto\\informe_resumen.md",
+    "archivo_destino": "datos\\salida_mvp\\informe_resumen.md",
+    "tamano_bytes": 1001,
+    "tipo_documento": "general",
+    "modelo": "qwen2.5:3b"
+  },
+  "e68d96874de1a547b61dd84cc2f808fea461b0107ee4bff3c33b718927c7c85e": {
+    "archivo_origen": "C:\\Users\\mandi\\Documents\\Proyectos\\Plataforma IA local\\datos\\entrada_mvp\\lote_a_texto\\notas_reunion.txt",
+    "archivo_destino": "datos\\salida_mvp\\notas_reunion.txt",
+    "tamano_bytes": 770,
+    "tipo_documento": "general",
+    "modelo": "qwen2.5:3b"
+  },
+  "830be5e6f2ab627d161a8e9a91977d67341d23b6063aed10955de1afd59d4a4e": {
+    "archivo_origen": "C:\\Users\\mandi\\Documents\\Proyectos\\Plataforma IA local\\datos\\entrada_mvp\\lote_b_ofimatica\\minuta_directorio.docx",
+    "archivo_destino": "datos\\salida_mvp\\minuta_directorio.docx",
+    "tamano_bytes": 37008,
+    "tipo_documento": "general",
+    "modelo": "qwen2.5:3b"
+  },
+  "9744dbfa3b5bf1a487f77dced27ed6b40e68e6a5eb42e3d42d5e1c481e7f657c": {
+    "archivo_origen": "C:\\Users\\mandi\\Documents\\Proyectos\\Plataforma IA local\\datos\\entrada_mvp\\lote_b_ofimatica\\propuesta_servicio.docx",
+    "archivo_destino": "datos\\salida_mvp\\propuesta_servicio.docx",
+    "tamano_bytes": 36929,
+    "tipo_documento": "general",
+    "modelo": "qwen2.5:3b"
+  },
+  "3c9de5cd368dc9fc0c587795f7d1ab7736b80f97f7be6d01e122e560004c783f": {
+    "archivo_origen": "C:\\Users\\mandi\\Documents\\Proyectos\\Plataforma IA local\\datos\\entrada_mvp\\lote_c_tecnico\\guia_despliegue_local.md",
+    "archivo_destino": "datos\\salida_mvp\\guia_despliegue_local.md",
+    "tamano_bytes": 1665,
+    "tipo_documento": "tecnico",
+    "modelo": "qwen2.5-coder:3b"
+  },
+  "a3a37fcd4fc0266f37c670d4e87e3178ad3adcb2620fc31b6f55dc4d841b0d47": {
+    "archivo_origen": "C:\\Users\\mandi\\Documents\\Proyectos\\Plataforma IA local\\datos\\entrada_mvp\\lote_e_extendidos\\catalogo_productos.csv",
+    "archivo_destino": "datos\\salida_mvp\\catalogo_productos.csv",
+    "tamano_bytes": 241,
+    "tipo_documento": "general",
+    "modelo": "qwen2.5:3b"
+  },
+  "36f11e481cb753eb7ccb85f3515ebb1cc9d095c700c8b7ed2e0a5671db22c095": {
+    "archivo_origen": "C:\\Users\\mandi\\Documents\\Proyectos\\Plataforma IA local\\datos\\entrada_mvp\\lote_e_extendidos\\notificacion_renovacion.rtf",
+    "archivo_destino": "datos\\salida_mvp\\notificacion_renovacion.rtf",
+    "tamano_bytes": 332,
+    "tipo_documento": "general",
+    "modelo": "qwen2.5:3b"
+  },
+  "34fd4e541bf79d14c7fa6c0d634ff103d816bed2719287239cddfe0948e847ba": {
+    "archivo_origen": "C:\\Users\\mandi\\Documents\\Proyectos\\Plataforma IA local\\datos\\entrada_mvp\\lote_e_extendidos\\plan_capacitacion.odt",
+    "archivo_destino": "datos\\salida_mvp\\plan_capacitacion.odt",
+    "tamano_bytes": 1588,
+    "tipo_documento": "general",
+    "modelo": "qwen2.5:3b"
+  }
+}

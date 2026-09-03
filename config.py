@@ -8,7 +8,8 @@ from pathlib import Path
 from typing import FrozenSet, Optional
 
 EXTENSIONES_SOPORTADAS: FrozenSet[str] = frozenset({
-    ".pdf", ".docx", ".pptx", ".xlsx", ".html", ".txt", ".md"
+    ".pdf", ".docx", ".doc", ".odt", ".rtf", ".pptx", ".ppt",
+    ".xlsx", ".xls", ".csv", ".html", ".txt", ".md"
 })
 
 @dataclass(frozen=True)
@@ -49,3 +50,40 @@ class Config:
             object.__setattr__(self, "ruta_errores", Path(self.ruta_errores))
         if not isinstance(self.ruta_logs, Path):
             object.__setattr__(self, "ruta_logs", Path(self.ruta_logs))
+
+    @classmethod
+    def para_mvp(cls, **kwargs) -> "Config":
+        """Genera una configuración calibrada para el MVP local (GTX 1650 4 GB VRAM)."""
+        defaults = {
+            "modelo": "qwen2.5:3b",
+            "modelo_fallback": "qwen2.5:1.5b",
+            "num_ctx": 2048,
+            "chunk_size": 1800,
+            "chunk_overlap": 150,
+            "timeout_inferencia_segundos": 60.0,
+        }
+        defaults.update(kwargs)
+        return cls(**defaults)
+
+    @classmethod
+    def para_produccion(cls, **kwargs) -> "Config":
+        """Genera una configuración calibrada para la Workstation de Producción (RTX PRO 4000 24 GB VRAM)."""
+        defaults = {
+            "modelo": "qwen2.5:14b",
+            "modelo_fallback": "qwen2.5:7b",
+            "num_ctx": 32768,
+            "chunk_size": 4500,
+            "chunk_overlap": 300,
+            "timeout_inferencia_segundos": 180.0,
+        }
+        defaults.update(kwargs)
+        return cls(**defaults)
+
+    @classmethod
+    def desde_entorno(cls, **kwargs) -> "Config":
+        """Detecta el entorno operativo via PLATAFORMA_ENTORNO ('mvp' o 'produccion')."""
+        import os
+        entorno = os.getenv("PLATAFORMA_ENTORNO", "mvp").lower().strip()
+        if entorno in ("prod", "produccion", "production"):
+            return cls.para_produccion(**kwargs)
+        return cls.para_mvp(**kwargs)

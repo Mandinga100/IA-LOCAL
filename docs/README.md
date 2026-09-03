@@ -11,9 +11,12 @@ Este sistema opera en **Windows 10 64-bit**, 100% desconectado de la nube (offli
 | Documento | Descripción |
 |---|---|
 | [Contexto del Proyecto](contexto_proyecto.md) | Objetivos, alcance funcional, stack tecnológico, requisitos de hardware y modelos locales. |
+| [Arquitectura del Núcleo de 5 Capas](arquitectura_nucleo_5_capas.md) | Módulo `core/`, endpoints `/v1` para Open WebUI, política Zero-Swap y guardrails. |
 | [Planificación y Arquitectura](planificacion_y_arquitectura.md) | Diseño desacoplado, inmutabilidad, chunking semántico, prevención de mojibakes y mitigación de errores en PowerShell. |
 | [Especificación TDD y Pruebas](especificacion_tdd_y_pruebas.md) | Suite de pruebas unitarias e integración (12 tests, 83% cobertura), mocks con `respx` y auditoría de fallos silenciosos. |
 | [Guía Operativa y Manual de Uso](guia_operativa.md) | Comandos para Windows 10 PowerShell, flags de CLI, configuración de Ollama, ledger de auditoría y troubleshooting. |
+| [Reportes de Ejecución MVP](reportes_ejecucion_mvp/README.md) | Auditorías forenses, telemetría de GPU GTX 1650, métricas de rendimiento y resultados de las corridas del MVP. |
+| [Auditoría 360° y Transformaciones](auditoria_360_y_transformaciones/README.md) | Análisis multidimensional, optimizaciones de VRAM/seguridad y matriz de compatibilidad para 14 formatos. |
 
 ---
 

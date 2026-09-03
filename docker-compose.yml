@@ -1,0 +1,32 @@
+# AnythingLLM Multi-User Docker Compose
+# Plataforma IA Local - Windows 10 64-bit
+# Conexión local a Ollama (http://host.docker.internal:11434) y Gateway (http://host.docker.internal:8000)
+
+version: '3.8'
+
+services:
+  anythingllm:
+    image: mintplexlabs/anythingllm:latest
+    container_name: anythingllm-multiuser
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    environment:
+      - SERVER_PORT=3001
+      - STORAGE_DIR=/app/server/storage
+      - DISABLE_TELEMETRY=true
+      # Para habilitar multi-usuario nativo con JWT:
+      - JWT_SECRET=plataforma_ia_local_secret_key_change_in_production_2026
+      # Desactivar telemetría externa para privacidad 100% offline
+      - DISABLE_PRIVACY_WARNING=true
+    volumes:
+      - ./docker_storage:/app/server/storage
+    extra_hosts:
+      # Permite al contenedor acceder a Ollama y FastAPI en el host Windows
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/api/ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s

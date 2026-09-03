@@ -1,0 +1,1501 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Plataforma IA Local | Procesamiento, Corrección y Telemetría GPU</title>
+  <meta name="description" content="Plataforma industrial 100% offline para procesar, corregir estilo y reconstruir documentos multiformato con IA Local, telemetría GPU y preservación documental en Windows.">
+  
+  <!-- Google Fonts: Outfit & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <style>
+    /* ==========================================================================
+       VARIABLES Y SISTEMA DE DISEÑO (CSS CUSTOM PROPERTIES)
+       ========================================================================== */
+    :root {
+      --bg-main: #070a13;
+      --bg-card: rgba(15, 23, 42, 0.75);
+      --bg-card-hover: rgba(30, 41, 59, 0.85);
+      --bg-input: rgba(11, 15, 25, 0.85);
+      --bg-sidebar: rgba(15, 23, 42, 0.9);
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-focus: #6366f1;
+      
+      --primary: #6366f1;
+      --primary-hover: #4f46e5;
+      --primary-glow: rgba(99, 102, 241, 0.25);
+      --secondary: #06b6d4;
+      --success: #10b981;
+      --success-glow: rgba(16, 185, 129, 0.2);
+      --warning: #f59e0b;
+      --danger: #ef4444;
+
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+
+      --font-heading: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+      --shadow-glass: 0 12px 40px 0 rgba(0, 0, 0, 0.45);
+      --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Reset & Base */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-body);
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      line-height: 1.6;
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.14) 0px, transparent 45%),
+        radial-gradient(at 100% 100%, rgba(6, 182, 212, 0.1) 0px, transparent 45%);
+      background-attachment: fixed;
+    }
+
+    /* Layout Principal de 3 Columnas */
+    .app-container {
+      max-width: 1560px;
+      margin: 0 auto;
+      padding: 20px 24px 40px;
+      width: 100%;
+      flex: 1;
+    }
+
+    /* Header y Hero */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border-subtle);
+      margin-bottom: 24px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .brand-icon {
+      width: 44px;
+      height: 44px;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      box-shadow: 0 4px 16px var(--primary-glow);
+    }
+
+    .brand-text h1 {
+      font-family: var(--font-heading);
+      font-size: 1.45rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      background: linear-gradient(90deg, #ffffff, #cbd5e1);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .brand-text p {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+    }
+
+    .header-badges {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .status-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      padding: 8px 14px;
+      border-radius: 9999px;
+      font-size: 0.82rem;
+      font-weight: 500;
+      backdrop-filter: blur(12px);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: var(--warning);
+      box-shadow: 0 0 8px var(--warning);
+      transition: var(--transition);
+    }
+
+    .status-dot.online {
+      background-color: var(--success);
+      box-shadow: 0 0 8px var(--success);
+    }
+
+    .status-dot.offline {
+      background-color: var(--danger);
+      box-shadow: 0 0 8px var(--danger);
+    }
+
+    /* Grid de Trabajo de 3 Columnas */
+    .workspace-grid {
+      display: grid;
+      grid-template-columns: 360px 1fr 340px;
+      gap: 20px;
+    }
+
+    @media (max-width: 1280px) {
+      .workspace-grid {
+        grid-template-columns: 340px 1fr;
+      }
+      .telemetry-sidebar {
+        grid-column: span 2;
+      }
+    }
+
+    @media (max-width: 900px) {
+      .workspace-grid {
+        grid-template-columns: 1fr;
+      }
+      .telemetry-sidebar {
+        grid-column: span 1;
+      }
+    }
+
+    /* Tarjetas Glassmorphism */
+    .glass-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 22px;
+      backdrop-filter: blur(16px);
+      box-shadow: var(--shadow-glass);
+      transition: var(--transition);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card-title {
+      font-family: var(--font-heading);
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #f1f5f9;
+    }
+
+    /* Zona Drag and Drop */
+    .drop-zone {
+      border: 2px dashed rgba(99, 102, 241, 0.35);
+      border-radius: var(--radius-md);
+      padding: 28px 16px;
+      text-align: center;
+      cursor: pointer;
+      background: rgba(11, 15, 25, 0.5);
+      transition: var(--transition);
+      position: relative;
+    }
+
+    .drop-zone:hover, .drop-zone.drag-over {
+      border-color: var(--primary);
+      background: rgba(99, 102, 241, 0.1);
+      transform: translateY(-2px);
+    }
+
+    .drop-icon {
+      font-size: 32px;
+      margin-bottom: 10px;
+      color: var(--primary);
+    }
+
+    .drop-zone h3 {
+      font-size: 0.92rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .drop-zone p {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .format-pills {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 5px;
+      margin-top: 12px;
+    }
+
+    .pill {
+      font-size: 0.65rem;
+      font-weight: 600;
+      background: rgba(255, 255, 255, 0.05);
+      padding: 2px 7px;
+      border-radius: 4px;
+      color: var(--text-muted);
+      border: 1px solid var(--border-subtle);
+    }
+
+    /* Vista previa de archivo cargado */
+    .file-preview {
+      display: none;
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 12px;
+      margin-top: 14px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .file-preview.active {
+      display: flex;
+    }
+
+    .file-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      overflow: hidden;
+    }
+
+    .file-name {
+      font-size: 0.85rem;
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 180px;
+    }
+
+    .file-size {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+
+    .btn-remove {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 16px;
+      padding: 4px;
+      border-radius: 4px;
+      transition: var(--transition);
+    }
+
+    .btn-remove:hover {
+      color: var(--danger);
+      background: rgba(239, 68, 68, 0.1);
+    }
+
+    /* Controles y Formularios */
+    .control-group {
+      margin-top: 16px;
+    }
+
+    .control-label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    select, input[type="text"] {
+      width: 100%;
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-main);
+      padding: 10px 12px;
+      border-radius: var(--radius-sm);
+      font-family: var(--font-body);
+      font-size: 0.84rem;
+      outline: none;
+      transition: var(--transition);
+    }
+
+    select:focus, input[type="text"]:focus {
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 3px var(--primary-glow);
+    }
+
+    /* Botón Principal */
+    .btn-primary {
+      width: 100%;
+      background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+      color: #ffffff;
+      border: none;
+      padding: 12px;
+      border-radius: var(--radius-sm);
+      font-family: var(--font-heading);
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 4px 14px var(--primary-glow);
+      transition: var(--transition);
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px var(--primary-glow);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Banner de Conexión Externa */
+    .connection-banner {
+      display: none;
+      background: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.98));
+      border: 1px solid rgba(245, 158, 11, 0.45);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+      border-radius: var(--radius-md);
+      padding: 16px 20px;
+      margin-bottom: 20px;
+      backdrop-filter: blur(12px);
+    }
+    .connection-banner.visible {
+      display: block;
+    }
+    .connection-banner-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 6px;
+    }
+    .connection-banner-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #fbbf24;
+      font-family: var(--font-heading);
+    }
+    .connection-banner-desc {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin-bottom: 12px;
+    }
+    .connection-form {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .connection-input {
+      flex: 1;
+      min-width: 280px;
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      color: #fff;
+      font-size: 0.85rem;
+      outline: none;
+      transition: var(--transition);
+    }
+    .connection-input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px var(--primary-glow);
+    }
+    .btn-connect {
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      border-radius: var(--radius-sm);
+      font-weight: 600;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .btn-connect:hover {
+      opacity: 0.9;
+      transform: translateY(-1px);
+    }
+    .connection-banner-tip {
+      font-size: 0.75rem;
+      color: #94a3b8;
+      margin-top: 10px;
+    }
+    .connection-banner-tip code {
+      background: rgba(255, 255, 255, 0.08);
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: #e2e8f0;
+      font-family: var(--font-mono);
+    }
+
+    /* Barra de Progreso */
+    .progress-wrapper {
+      display: none;
+      margin-top: 16px;
+    }
+
+    .progress-wrapper.active {
+      display: block;
+    }
+
+    .progress-bar-bg {
+      height: 6px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 9999px;
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
+      border-radius: 9999px;
+      transition: width 0.4s ease;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 0.8; }
+      50% { opacity: 1; }
+      100% { opacity: 0.8; }
+    }
+
+    .progress-status {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    /* Panel Central: Visores y Pestañas */
+    .results-panel {
+      min-height: 600px;
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border-subtle);
+      padding-bottom: 12px;
+      margin-bottom: 16px;
+    }
+
+    .view-tabs {
+      display: flex;
+      gap: 6px;
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+      padding: 6px 12px;
+      border-radius: var(--radius-sm);
+      font-size: 0.78rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .tab-btn.active {
+      background: rgba(99, 102, 241, 0.18);
+      border-color: var(--primary);
+      color: #ffffff;
+    }
+
+    /* Contenedores de Vistas */
+    .view-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* Vista Documento Renderizado */
+    .rendered-doc-view {
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 24px;
+      overflow-y: auto;
+      max-height: 520px;
+      font-size: 0.92rem;
+      line-height: 1.8;
+      color: #f1f5f9;
+    }
+
+    .rendered-doc-view h1 { font-family: var(--font-heading); font-size: 1.4rem; color: #ffffff; margin-bottom: 12px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 6px; }
+    .rendered-doc-view h2 { font-family: var(--font-heading); font-size: 1.2rem; color: #e2e8f0; margin-top: 16px; margin-bottom: 10px; }
+    .rendered-doc-view h3 { font-family: var(--font-heading); font-size: 1.05rem; color: #cbd5e1; margin-top: 12px; margin-bottom: 8px; }
+    .rendered-doc-view p { margin-bottom: 12px; }
+    .rendered-doc-view ul { margin-left: 20px; margin-bottom: 12px; }
+    .rendered-doc-view li { margin-bottom: 4px; }
+    .rendered-doc-view table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 0.85rem; }
+    .rendered-doc-view th, .rendered-doc-view td { border: 1px solid var(--border-subtle); padding: 8px 12px; text-align: left; }
+    .rendered-doc-view th { background: rgba(255, 255, 255, 0.05); font-weight: 600; color: #ffffff; }
+
+    /* Vista Comparativa Side-by-Side */
+    .diff-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      flex: 1;
+    }
+
+    @media (max-width: 768px) {
+      .diff-container {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .diff-box {
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .diff-box-title {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .diff-content {
+      flex: 1;
+      overflow-y: auto;
+      font-size: 0.85rem;
+      line-height: 1.7;
+      color: #e2e8f0;
+      white-space: pre-wrap;
+      font-family: var(--font-body);
+      max-height: 480px;
+      padding-right: 6px;
+    }
+
+    /* Scrollbars */
+    .diff-content::-webkit-scrollbar, .rendered-doc-view::-webkit-scrollbar {
+      width: 6px;
+    }
+    .diff-content::-webkit-scrollbar-thumb, .rendered-doc-view::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 4px;
+    }
+
+    /* Acciones de Descarga */
+    .action-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 16px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border-subtle);
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-main);
+      padding: 8px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 0.82rem;
+      font-weight: 500;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: var(--transition);
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-download-saveas {
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: var(--radius-sm);
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 4px 12px var(--primary-glow);
+      transition: var(--transition);
+    }
+
+    .btn-download-saveas:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px var(--primary-glow);
+    }
+
+    .btn-download-direct {
+      background: linear-gradient(135deg, var(--success), #059669);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: var(--radius-sm);
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 4px 12px var(--success-glow);
+      transition: var(--transition);
+    }
+
+    /* Panel Lateral de Telemetría e Inteligencia */
+    .telemetry-sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .telemetry-section {
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 14px;
+    }
+
+    .telemetry-title {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .metric-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      font-size: 0.8rem;
+    }
+
+    .metric-label {
+      color: var(--text-muted);
+    }
+
+    .metric-val {
+      font-weight: 600;
+      color: #ffffff;
+      font-family: var(--font-mono);
+    }
+
+    .metric-val.highlight {
+      color: var(--secondary);
+    }
+
+    .metric-val.success {
+      color: var(--success);
+    }
+
+    /* Barras de VRAM y Uso */
+    .meter-container {
+      margin-top: 6px;
+      margin-bottom: 12px;
+    }
+
+    .meter-bar {
+      height: 6px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 9999px;
+      overflow: hidden;
+    }
+
+    .meter-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--secondary), var(--primary));
+      border-radius: 9999px;
+      width: 0%;
+      transition: width 0.5s ease;
+    }
+
+    .hash-badge {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border-subtle);
+      padding: 4px 6px;
+      border-radius: 4px;
+      color: var(--text-muted);
+      word-break: break-all;
+    }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: 20px 0;
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      border-top: 1px solid var(--border-subtle);
+      margin-top: 32px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+    <!-- Header -->
+    <header>
+      <div class="brand">
+        <div class="brand-icon">⚡</div>
+        <div class="brand-text">
+          <h1>Plataforma IA Local</h1>
+          <p>Procesamiento, Corrección y Reconstrucción Inteligente con Telemetría GPU (100% Offline)</p>
+        </div>
+      </div>
+
+      <div class="header-badges">
+        <div class="status-badge" id="apiConfigBadge" style="cursor: pointer;" title="Haz clic para configurar la URL del servidor API">
+          <span style="font-size: 14px;">🌐</span>
+          <span id="apiHostText">API: Local (8000) ✏️</span>
+        </div>
+        <div class="status-badge" id="gpuBadge">
+          <span style="font-size: 14px;">🎮</span>
+          <span id="gpuText">GTX 1650 (Telemetría Activa)</span>
+        </div>
+        <div class="status-badge" id="ollamaStatusBadge">
+          <div class="status-dot" id="statusDot"></div>
+          <span id="statusText">Verificando Ollama...</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Banner de Conexión de Servidor (visible cuando la API está desconectada) -->
+    <div class="connection-banner" id="connectionBanner">
+      <div class="connection-banner-header">
+        <span style="font-size: 20px;">⚠️</span>
+        <span class="connection-banner-title">Conexión con Motor IA Requerida</span>
+      </div>
+      <p class="connection-banner-desc">
+        Esta aplicación se ejecuta en la nube (Firebase), mientras que los modelos de lenguaje y la GPU residen de forma segura en tu computador local. Para conectar usuarios externos o remotos, ingresa la URL de tu túnel HTTPS (ej: de LocalTunnel, Cloudflare o Ngrok) o la IP de tu servidor:
+      </p>
+      <div class="connection-form">
+        <input type="text" id="bannerApiInput" class="connection-input" placeholder="Ej: https://tu-tunel.loca.lt o http://192.168.100.31:8000">
+        <button id="btnConectarBanner" class="btn-connect">⚡ Conectar Motor IA</button>
+      </div>
+      <div class="connection-banner-tip">
+        💡 <strong>Usuarios Externos:</strong> En la terminal de tu computador ejecuta <code>npx localtunnel --port 8000</code> y pega aquí la URL generada.
+      </div>
+    </div>
+
+    <!-- Grid de 3 Columnas -->
+    <div class="workspace-grid">
+      
+      <!-- Columna 1: Carga y Parámetros -->
+      <div class="glass-card">
+        <h2 class="card-title">📁 Carga de Documento</h2>
+        
+        <!-- Zona Drag and Drop -->
+        <div class="drop-zone" id="dropZone">
+          <input type="file" id="fileInput" style="display: none;" accept=".pdf,.docx,.doc,.odt,.rtf,.pptx,.ppt,.xlsx,.xls,.csv,.html,.txt,.md">
+          <div class="drop-icon">📤</div>
+          <h3>Arrastra tu archivo aquí</h3>
+          <p>o haz clic para explorar en tu equipo</p>
+          <div class="format-pills">
+            <span class="pill">DOCX</span>
+            <span class="pill">ODT</span>
+            <span class="pill">RTF</span>
+            <span class="pill">CSV</span>
+            <span class="pill">PDF</span>
+            <span class="pill">XLSX</span>
+            <span class="pill">TXT</span>
+            <span class="pill">MD</span>
+          </div>
+        </div>
+
+        <!-- Archivo Seleccionado -->
+        <div class="file-preview" id="filePreview">
+          <div class="file-info">
+            <span style="font-size: 18px;">📄</span>
+            <div>
+              <div class="file-name" id="fileName">documento.docx</div>
+              <div class="file-size" id="fileSize">0 KB</div>
+            </div>
+          </div>
+          <button class="btn-remove" id="btnRemoveFile" title="Quitar archivo">✕</button>
+        </div>
+
+        <!-- Parámetros de Inferencia -->
+        <div class="control-group">
+          <label class="control-label" for="selectTipo">Tipo de Documento & Prompt:</label>
+          <select id="selectTipo">
+            <option value="general">General (Ortografía, estilo y fluidez)</option>
+            <option value="legal">Legal (Contratos y citas normativas)</option>
+            <option value="tecnico">Técnico (Código, comandos y manuales)</option>
+            <option value="academico">Académico (Tesis y rigor formal)</option>
+            <option value="comercial">Comercial (Propuestas y marketing)</option>
+          </select>
+        </div>
+
+        <div class="control-group">
+          <label class="control-label" for="selectModelo">Modelo LLM Local (Ollama):</label>
+          <select id="selectModelo">
+            <option value="qwen2.5:3b">qwen2.5:3b (Óptimo para 4 GB VRAM)</option>
+            <option value="qwen2.5-coder:3b">qwen2.5-coder:3b (Código intacto)</option>
+            <option value="qwen2.5:7b">qwen2.5:7b (Perfil 8–16 GB VRAM)</option>
+            <option value="llama3.1:8b">llama3.1:8b (Meta Llama 3.1)</option>
+          </select>
+        </div>
+
+        <div class="control-group">
+          <label class="control-label" for="selectChunkSize">Límite de Chunk Semántico:</label>
+          <select id="selectChunkSize">
+            <option value="1800">1.800 caracteres (Recomendado GTX 1650 4 GB)</option>
+            <option value="2500">2.500 caracteres (Equilibrado)</option>
+            <option value="3500">3.500 caracteres (Estación 8–16 GB)</option>
+          </select>
+        </div>
+
+        <!-- Barra de Progreso -->
+        <div class="progress-wrapper" id="progressWrapper">
+          <div class="progress-bar-bg">
+            <div class="progress-bar-fill" id="progressBarFill"></div>
+          </div>
+          <div class="progress-status">
+            <span id="progressMessage">Iniciando pipeline...</span>
+            <span id="progressPercent">0%</span>
+          </div>
+        </div>
+
+        <!-- Botón de Acción -->
+        <button class="btn-primary" id="btnProcesar" disabled>
+          <span>✨</span> Iniciar Procesamiento IA
+        </button>
+      </div>
+
+      <!-- Columna 2: Visor y Previsualización Documental -->
+      <div class="glass-card results-panel">
+        <div class="panel-header">
+          <h2 class="card-title" style="margin-bottom: 0;">👁️ Previsualización & Comparativa</h2>
+          <div class="view-tabs">
+            <button class="tab-btn active" id="tabRendered"><span>📄</span> Documento</button>
+            <button class="tab-btn" id="tabDiff"><span>🔍</span> Comparativa</button>
+            <button class="tab-btn" id="tabMarkdown"><span>📝</span> Markdown</button>
+          </div>
+        </div>
+
+        <!-- Contenedores de Vistas -->
+        <div class="view-container">
+          
+          <!-- Vista 1: Documento Renderizado Estilizado -->
+          <div class="rendered-doc-view" id="viewRendered">
+            <div id="renderedContent">
+              <p style="color: var(--text-dim); text-align: center; margin-top: 40px;">
+                Carga un documento para visualizar la versión corregida y maquetada con formato profesional.
+              </p>
+            </div>
+          </div>
+
+          <!-- Vista 2: Comparativa Side-by-Side -->
+          <div class="diff-container" id="viewDiff" style="display: none;">
+            <div class="diff-box">
+              <div class="diff-box-title">
+                <span>Original Extraído</span>
+                <span id="charsOriginal">0 chars</span>
+              </div>
+              <div class="diff-content" id="contentOriginal">Esperando documento...</div>
+            </div>
+
+            <div class="diff-box">
+              <div class="diff-box-title">
+                <span>Resultado IA Corregido</span>
+                <span id="charsCorregido">0 chars</span>
+              </div>
+              <div class="diff-content" id="contentCorregido">Esperando procesamiento...</div>
+            </div>
+          </div>
+
+          <!-- Vista 3: Markdown Fuente -->
+          <div class="rendered-doc-view" id="viewMarkdown" style="display: none; font-family: var(--font-mono); font-size: 0.82rem;">
+            <pre id="rawMarkdownContent" style="white-space: pre-wrap; color: #38bdf8;">Sin contenido markdown cargado.</pre>
+          </div>
+
+        </div>
+
+        <!-- Barra de Acciones de Guardado y Descarga -->
+        <div class="action-bar">
+          <button class="btn-secondary" id="btnCopiar" disabled>
+            <span>📋</span> Copiar Texto
+          </button>
+
+          <div style="display: flex; gap: 8px;">
+            <button class="btn-download-saveas" id="btnGuardarComo" disabled title="Elegir carpeta local para guardar">
+              <span>💾</span> Guardar Como... (Elegir Carpeta)
+            </button>
+            <button class="btn-download-direct" id="btnDescargar" disabled title="Descarga directa al navegador">
+              <span>📥</span> Descarga Rápida
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Columna 3: Telemetría de Procesamiento & Inteligencia GPU -->
+      <div class="glass-card telemetry-sidebar">
+        <h2 class="card-title">📊 Telemetría & Rendimiento</h2>
+
+        <!-- Sección GPU & VRAM -->
+        <div class="telemetry-section">
+          <div class="telemetry-title">
+            <span>🎮</span> Hardware & GPU Local
+          </div>
+          <div class="metric-row">
+            <span class="metric-label">GPU Activa:</span>
+            <span class="metric-val" id="telemetryGpuName">NVIDIA GTX 1650</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-label">VRAM Utilizada:</span>
+            <span class="metric-val highlight" id="telemetryVramUsed">503 MB / 4096 MB</span>
+          </div>
+          <div class="meter-container">
+            <div class="meter-bar">
+              <div class="meter-fill" id="vramMeterFill" style="width: 12%;"></div>
+            </div>
+          </div>
+          <div class="metric-row">
+            <span class="metric-label">Carga GPU:</span>
+            <span class="metric-val" id="telemetryGpuUtil">0%</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-label">Temperatura:</span>
+            <span class="metric-val" id="telemetryGpuTemp">31°C</span>
+          </div>
+        </div>
+
+        <!-- Sección Tiempos de Procesamiento -->
+        <div class="telemetry-section">
+          <div class="telemetry-title">
+            <span>⚡</span> Tiempos de Ejecución
+          </div>
+          <div class="metric-row">
+            <span class="metric-label">Tiempo Total:</span>
+            <span class="metric-val highlight" id="telemetryTimeTotal">0.00 s</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-label">1. Ingestión/Conversión:</span>
+            <span class="metric-val" id="telemetryTimeConv">0.0 ms</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-label">2. Inferencia IA (Ollama):</span>
+            <span class="metric-val" id="telemetryTimeInf">0.0 ms</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-label">3. Reconstrucción Salida:</span>
+            <span class="metric-val" id="telemetryTimeRec">0.0 ms</span>
+          </div>
+        </div>
+
+        <!-- Sección Esfuerzo & IA Local -->
+        <div class="telemetry-section">
+          <div class="telemetry-title">
+            <span>🧠</span> Rendimiento de Inferencia
+          </div>
+          <div class="metric-row">
+            <span class="metric-label">Modelo Ejecutado:</span>
+            <span class="metric-val" id="telemetryModelName">qwen2.5:3b</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-label">Tokens Estimados:</span>
+            <span class="metric-val" id="telemetryTokens">0 tokens</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-label">Velocidad Generación:</span>
+            <span class="metric-val success" id="telemetryTokensPerSec">0.0 tok/s</span>
+          </div>
+        </div>
+
+        <!-- Sección Calidad & Integridad -->
+        <div class="telemetry-section">
+          <div class="telemetry-title">
+            <span>🛡️</span> Calidad & Ledger SHA-256
+          </div>
+          <div class="metric-row">
+            <span class="metric-label">Score Preservación:</span>
+            <span class="metric-val success" id="telemetryScore">100%</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-label">Delta Caracteres:</span>
+            <span class="metric-val" id="telemetryDeltaChars">0 chars</span>
+          </div>
+          <div style="margin-top: 8px;">
+            <span class="metric-label" style="font-size: 0.72rem;">Hash SHA-256 (Inmutable):</span>
+            <div class="hash-badge" id="telemetryHash">Sin procesar</div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- Footer -->
+    <footer>
+      Plataforma IA Local &copy; 2026 | Arquitectura ECC v2.0.0 | Windows 10 64-bit Offline | 100% Soberanía de Datos
+    </footer>
+  </div>
+
+  <!-- ==========================================================================
+       LÓGICA JAVASCRIPT REACTIVA (VANILLA JS NATIVO)
+       ========================================================================== -->
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // Elementos del DOM
+      const dropZone = document.getElementById("dropZone");
+      const fileInput = document.getElementById("fileInput");
+      const filePreview = document.getElementById("filePreview");
+      const fileName = document.getElementById("fileName");
+      const fileSize = document.getElementById("fileSize");
+      const btnRemoveFile = document.getElementById("btnRemoveFile");
+      const btnProcesar = document.getElementById("btnProcesar");
+      const selectTipo = document.getElementById("selectTipo");
+      const selectModelo = document.getElementById("selectModelo");
+      const selectChunkSize = document.getElementById("selectChunkSize");
+      const statusDot = document.getElementById("statusDot");
+      const statusText = document.getElementById("statusText");
+      
+      const progressWrapper = document.getElementById("progressWrapper");
+      const progressBarFill = document.getElementById("progressBarFill");
+      const progressMessage = document.getElementById("progressMessage");
+      const progressPercent = document.getElementById("progressPercent");
+
+      const viewRendered = document.getElementById("viewRendered");
+      const viewDiff = document.getElementById("viewDiff");
+      const viewMarkdown = document.getElementById("viewMarkdown");
+      const renderedContent = document.getElementById("renderedContent");
+      const rawMarkdownContent = document.getElementById("rawMarkdownContent");
+      const contentOriginal = document.getElementById("contentOriginal");
+      const contentCorregido = document.getElementById("contentCorregido");
+      const charsOriginal = document.getElementById("charsOriginal");
+      const charsCorregido = document.getElementById("charsCorregido");
+
+      const btnCopiar = document.getElementById("btnCopiar");
+      const btnGuardarComo = document.getElementById("btnGuardarComo");
+      const btnDescargar = document.getElementById("btnDescargar");
+
+      const tabRendered = document.getElementById("tabRendered");
+      const tabDiff = document.getElementById("tabDiff");
+      const tabMarkdown = document.getElementById("tabMarkdown");
+
+      // Telemetría DOM
+      const telemetryGpuName = document.getElementById("telemetryGpuName");
+      const telemetryVramUsed = document.getElementById("telemetryVramUsed");
+      const vramMeterFill = document.getElementById("vramMeterFill");
+      const telemetryGpuUtil = document.getElementById("telemetryGpuUtil");
+      const telemetryGpuTemp = document.getElementById("telemetryGpuTemp");
+      const telemetryTimeTotal = document.getElementById("telemetryTimeTotal");
+      const telemetryTimeConv = document.getElementById("telemetryTimeConv");
+      const telemetryTimeInf = document.getElementById("telemetryTimeInf");
+      const telemetryTimeRec = document.getElementById("telemetryTimeRec");
+      const telemetryModelName = document.getElementById("telemetryModelName");
+      const telemetryTokens = document.getElementById("telemetryTokens");
+      const telemetryTokensPerSec = document.getElementById("telemetryTokensPerSec");
+      const telemetryScore = document.getElementById("telemetryScore");
+      const telemetryDeltaChars = document.getElementById("telemetryDeltaChars");
+      const telemetryHash = document.getElementById("telemetryHash");
+
+      let selectedFile = null;
+      let lastProcessedResult = null;
+
+      // Elementos de Configuración de API Backend y Banner
+      const apiConfigBadge = document.getElementById("apiConfigBadge");
+      const apiHostText = document.getElementById("apiHostText");
+      const connectionBanner = document.getElementById("connectionBanner");
+      const bannerApiInput = document.getElementById("bannerApiInput");
+      const btnConectarBanner = document.getElementById("btnConectarBanner");
+
+      function getApiBase() {
+        const stored = localStorage.getItem("custom_api_url");
+        if (stored && stored.trim()) return stored.trim().replace(/\/$/, "");
+        if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") return "";
+        return "http://127.0.0.1:8000";
+      }
+
+      function updateApiBadgeLabel() {
+        const url = getApiBase();
+        if (bannerApiInput) bannerApiInput.value = url;
+        if (!url) {
+          apiHostText.textContent = "API: Local (8000) ✏️";
+        } else {
+          try {
+            const parsed = new URL(url);
+            apiHostText.textContent = `API: ${parsed.host} ✏️`;
+          } catch(e) {
+            apiHostText.textContent = `API: ${url} ✏️`;
+          }
+        }
+      }
+
+      function aplicarNuevaUrl(nuevaUrl) {
+        if (!nuevaUrl || nuevaUrl.trim() === "") {
+          localStorage.removeItem("custom_api_url");
+        } else {
+          let formatted = nuevaUrl.trim();
+          if (!formatted.startsWith("http://") && !formatted.startsWith("https://")) {
+            formatted = "https://" + formatted;
+          }
+          localStorage.setItem("custom_api_url", formatted);
+        }
+        updateApiBadgeLabel();
+        updateTelemetry();
+      }
+
+      if (btnConectarBanner) {
+        btnConectarBanner.addEventListener("click", () => {
+          aplicarNuevaUrl(bannerApiInput.value);
+        });
+        bannerApiInput.addEventListener("keydown", (e) => {
+          if (e.key === "Enter") aplicarNuevaUrl(bannerApiInput.value);
+        });
+      }
+
+      apiConfigBadge.addEventListener("click", () => {
+        const current = getApiBase() || "https://tu-tunel.loca.lt";
+        const nuevo = prompt(
+          "Configura la URL de tu API Backend / Ollama (ej. https://tu-tunel.loca.lt o http://192.168.100.31:8000):\n\nDeja vacío para resetear a la configuración por defecto.",
+          current
+        );
+        if (nuevo !== null) {
+          aplicarNuevaUrl(nuevo);
+        }
+      });
+
+      updateApiBadgeLabel();
+
+      // 1. Chequeo de Salud y Telemetría GPU
+      async function updateTelemetry() {
+        const apiBase = getApiBase();
+        try {
+          const res = await fetch(`${apiBase}/api/salud`, {
+            headers: {
+              'bypass-tunnel-reminder': 'true'
+            }
+          });
+          if (res.ok) {
+            const data = await res.json();
+            statusDot.className = "status-dot online";
+            statusText.textContent = `Ollama Online (${data.modelos_disponibles.length} modelos)`;
+            if (connectionBanner) connectionBanner.classList.remove("visible");
+            
+            // Actualizar GPU
+            if (data.telemetria_gpu && data.telemetria_gpu.disponible) {
+              const gpu = data.telemetria_gpu;
+              telemetryGpuName.textContent = gpu.gpu_nombre;
+              telemetryVramUsed.textContent = `${gpu.vram_usada_mb} MB / ${gpu.vram_total_mb} MB`;
+              const pct = (gpu.vram_usada_mb / gpu.vram_total_mb) * 100;
+              vramMeterFill.style.width = `${pct}%`;
+              telemetryGpuUtil.textContent = `${gpu.gpu_util_pct}%`;
+              telemetryGpuTemp.textContent = `${gpu.gpu_temp_c}°C`;
+            }
+
+            // Poblar modelos
+            if (data.modelos_disponibles && data.modelos_disponibles.length > 0 && selectModelo.children.length <= 4) {
+              selectModelo.innerHTML = "";
+              data.modelos_disponibles.forEach(m => {
+                const opt = document.createElement("option");
+                opt.value = m;
+                opt.textContent = m;
+                if (m.includes("3b")) opt.selected = true;
+                selectModelo.appendChild(opt);
+              });
+            }
+          } else {
+            statusDot.className = "status-dot offline";
+            statusText.textContent = "Ollama no responde";
+            if (connectionBanner) connectionBanner.classList.add("visible");
+          }
+        } catch (e) {
+          statusDot.className = "status-dot offline";
+          statusText.textContent = "API Desconectada";
+          if (connectionBanner) connectionBanner.classList.add("visible");
+        }
+      }
+
+      updateTelemetry();
+      setInterval(updateTelemetry, 4000);
+
+      // 2. Renderizador Markdown Ligero Seguro
+      function renderMarkdown(md) {
+        if (!md) return "";
+        let html = md
+          .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+          .replace(/^### (.*$)/gim, "<h3>$1</h3>")
+          .replace(/^## (.*$)/gim, "<h2>$1</h2>")
+          .replace(/^# (.*$)/gim, "<h1>$1</h1>")
+          .replace(/\*\*(.*)\*\*/gim, "<strong>$1</strong>")
+          .replace(/\*(.*)\*/gim, "<em>$1</em>")
+          .replace(/^- (.*$)/gim, "<ul><li>$1</li></ul>")
+          .replace(/\n\n/gim, "</p><p>");
+
+        html = "<p>" + html + "</p>";
+        html = html.replace(/<\/ul>\s*<ul>/gim, "");
+        return html;
+      }
+
+      // 3. Gestión de Selección de Archivos (Drag & Drop)
+      dropZone.addEventListener("click", () => fileInput.click());
+
+      dropZone.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        dropZone.classList.add("drag-over");
+      });
+
+      dropZone.addEventListener("dragleave", () => {
+        dropZone.classList.remove("drag-over");
+      });
+
+      dropZone.addEventListener("drop", (e) => {
+        e.preventDefault();
+        dropZone.classList.remove("drag-over");
+        if (e.dataTransfer.files.length > 0) {
+          handleFileSelection(e.dataTransfer.files[0]);
+        }
+      });
+
+      fileInput.addEventListener("change", (e) => {
+        if (e.target.files.length > 0) {
+          handleFileSelection(e.target.files[0]);
+        }
+      });
+
+      function handleFileSelection(file) {
+        selectedFile = file;
+        fileName.textContent = file.name;
+        fileSize.textContent = `${(file.size / 1024).toFixed(1)} KB`;
+        filePreview.classList.add("active");
+        dropZone.style.display = "none";
+        btnProcesar.disabled = false;
+      }
+
+      btnRemoveFile.addEventListener("click", () => {
+        selectedFile = null;
+        fileInput.value = "";
+        filePreview.classList.remove("active");
+        dropZone.style.display = "block";
+        btnProcesar.disabled = true;
+      });
+
+      // 4. Procesamiento del Documento y Telemetría
+      btnProcesar.addEventListener("click", async () => {
+        if (!selectedFile) return;
+
+        btnProcesar.disabled = true;
+        progressWrapper.classList.add("active");
+        progressBarFill.style.width = "20%";
+        progressPercent.textContent = "20%";
+        progressMessage.textContent = "Extrayendo formato a Markdown...";
+
+        const formData = new FormData();
+        formData.append("archivo", selectedFile);
+        formData.append("tipo_documento", selectTipo.value);
+        formData.append("modelo", selectModelo.value);
+        formData.append("chunk_size", selectChunkSize.value);
+
+        try {
+          progressBarFill.style.width = "50%";
+          progressPercent.textContent = "50%";
+          progressMessage.textContent = "Ejecutando inferencia IA local...";
+
+          const res = await fetch(`${getApiBase()}/api/procesar`, {
+            method: "POST",
+            headers: {
+              'bypass-tunnel-reminder': 'true'
+            },
+            body: formData
+          });
+
+          if (!res.ok) {
+            const err = await res.json();
+            throw new Error(err.detail || "Error en el procesamiento");
+          }
+
+          progressBarFill.style.width = "85%";
+          progressPercent.textContent = "85%";
+          progressMessage.textContent = "Reconstruyendo archivo original...";
+
+          const data = await res.json();
+          lastProcessedResult = data;
+
+          // Actualizar Vistas
+          progressBarFill.style.width = "100%";
+          progressPercent.textContent = "100%";
+          progressMessage.textContent = "¡Completado con éxito!";
+
+          renderedContent.innerHTML = renderMarkdown(data.texto_corregido);
+          rawMarkdownContent.textContent = data.texto_corregido;
+          contentOriginal.textContent = data.texto_original;
+          contentCorregido.textContent = data.texto_corregido;
+          charsOriginal.textContent = `${data.texto_original.length} chars`;
+          charsCorregido.textContent = `${data.texto_corregido.length} chars`;
+
+          // Actualizar Panel de Telemetría
+          if (data.telemetria) {
+            const t = data.telemetria;
+            telemetryTimeTotal.textContent = `${t.tiempo_total_segundos} s`;
+            telemetryTimeConv.textContent = `${t.tiempo_conversion_ms} ms`;
+            telemetryTimeInf.textContent = `${t.tiempo_inferencia_ms} ms`;
+            telemetryTimeRec.textContent = `${t.tiempo_reconstruccion_ms} ms`;
+            telemetryModelName.textContent = t.modelo;
+            telemetryTokens.textContent = `${t.tokens_estimados} tokens`;
+            telemetryTokensPerSec.textContent = `${t.tokens_por_segundo} tok/s`;
+          }
+
+          if (data.calidad) {
+            const q = data.calidad;
+            telemetryScore.textContent = `${q.score_calidad}%`;
+            telemetryDeltaChars.textContent = `${q.delta_caracteres > 0 ? '+' : ''}${q.delta_caracteres} chars`;
+            telemetryHash.textContent = q.hash_sha256_corregido;
+          }
+
+          btnCopiar.disabled = false;
+          btnGuardarComo.disabled = false;
+          btnDescargar.disabled = false;
+
+        } catch (error) {
+          progressMessage.textContent = `Error: ${error.message}`;
+          progressBarFill.style.backgroundColor = "var(--danger)";
+        } finally {
+          btnProcesar.disabled = false;
+        }
+      });
+
+      // 5. Guardar Como... (Elección de Carpeta Local en Windows con File System Access API)
+      btnGuardarComo.addEventListener("click", async () => {
+        if (!lastProcessedResult || !lastProcessedResult.archivo_descarga) return;
+
+        const nombreSugerido = lastProcessedResult.archivo_descarga;
+        const urlDescarga = `${getApiBase()}/api/descargar/${encodeURIComponent(nombreSugerido)}`;
+
+        try {
+          const resp = await fetch(urlDescarga);
+          const blob = await resp.blob();
+
+          if ("showSaveFilePicker" in window) {
+            const handle = await window.showSaveFilePicker({
+              suggestedName: nombreSugerido,
+              types: [{
+                description: 'Documento Corregido',
+                accept: { 'application/octet-stream': [lastProcessedResult.extension || '.docx'] }
+              }]
+            });
+            const writable = await handle.createWritable();
+            await writable.write(blob);
+            await writable.close();
+          } else {
+            // Fallback con descarga convencional
+            const a = document.createElement("a");
+            a.href = URL.createObjectURL(blob);
+            a.download = nombreSugerido;
+            a.click();
+          }
+        } catch (e) {
+          if (e.name !== "AbortError") {
+            window.location.href = urlDescarga;
+          }
+        }
+      });
+
+      // 6. Descarga Rápida Directa
+      btnDescargar.addEventListener("click", () => {
+        if (!lastProcessedResult || !lastProcessedResult.archivo_descarga) return;
+        window.location.href = `${getApiBase()}/api/descargar/${encodeURIComponent(lastProcessedResult.archivo_descarga)}`;
+      });
+
+      // 7. Copiar Texto
+      btnCopiar.addEventListener("click", () => {
+        if (!contentCorregido.textContent) return;
+        navigator.clipboard.writeText(contentCorregido.textContent).then(() => {
+          const orig = btnCopiar.innerHTML;
+          btnCopiar.innerHTML = "<span>✓</span> ¡Copiado!";
+          setTimeout(() => btnCopiar.innerHTML = orig, 2000);
+        });
+      });
+
+      // 8. Control de Pestañas
+      tabRendered.addEventListener("click", () => {
+        tabRendered.classList.add("active");
+        tabDiff.classList.remove("active");
+        tabMarkdown.classList.remove("active");
+        viewRendered.style.display = "block";
+        viewDiff.style.display = "none";
+        viewMarkdown.style.display = "none";
+      });
+
+      tabDiff.addEventListener("click", () => {
+        tabDiff.classList.add("active");
+        tabRendered.classList.remove("active");
+        tabMarkdown.classList.remove("active");
+        viewRendered.style.display = "none";
+        viewDiff.style.display = "grid";
+        viewMarkdown.style.display = "none";
+      });
+
+      tabMarkdown.addEventListener("click", () => {
+        tabMarkdown.classList.add("active");
+        tabRendered.classList.remove("active");
+        tabDiff.classList.remove("active");
+        viewRendered.style.display = "none";
+        viewDiff.style.display = "none";
+        viewMarkdown.style.display = "block";
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,46 +1,62 @@
 # Guía Operativa y Manual de Uso: Plataforma IA Local
 
-## 1. Requisitos Previos
-
-1. **Windows 10 64-bit** con PowerShell 5.1 o PowerShell 7+.
-2. **Python 3.13 64-bit** o `py.exe` disponible.
-3. **Gestor `uv`** (ubicado en `~/.local/bin/uv.exe` o instalado globalmente).
-4. **Ollama para Windows** instalado y configurado.
+**Versión:** 0.3.0 (Consolidada)  
+**Entorno Operativo:** Windows 10 Pro 64-bit | PowerShell 5.1 / 7+ | Python 3.13  
+**Modelos Homologados:** `qwen2.5:3b`, `qwen2.5-coder:3b`, `qwen2.5:7b`, `llama3.1:8b`  
+**Formatos Soportados:** `.pdf`, `.docx`, `.doc`, `.odt`, `.rtf`, `.pptx`, `.ppt`, `.xlsx`, `.xls`, `.csv`, `.html`, `.txt`, `.md`
 
 ---
 
-## 2. Preparación del Entorno Virtual
+## 1. Requisitos Previos
 
-Si se clona o despliega el proyecto en una nueva ubicación, se inicializa el entorno virtual aislado en segundos mediante `uv`:
+1. **Windows 10 / 11 64-bit** con PowerShell 5.1 o PowerShell Core 7+.
+2. **Python 3.13 64-bit** instalado en el sistema.
+3. **Gestor de paquetes `uv`** (recomendado para instalación ultrarrápida de dependencias).
+4. **Ollama para Windows** instalado y corriendo como servicio (`http://localhost:11434`).
+
+---
+
+## 2. Preparación e Instalación del Entorno
 
 ```powershell
-# 1. Forzar codificación UTF-8 en PowerShell
+# 1. Configurar codificación UTF-8 en PowerShell
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 $OutputEncoding = [System.Text.Encoding]::UTF8
 $env:PYTHONUTF8 = "1"
 
-# 2. Crear entorno virtual aislado (forma portable — recomendada)
+# 2. Crear entorno virtual con Python 3.13
 uv venv .venv --python 3.13
 
-# Alternativa con ruta absoluta (fallback de diagnóstico en esta máquina):
-# & "C:\Users\mandi\.local\bin\uv.exe" venv .venv --python "C:\Users\mandi\AppData\Local\Programs\Python\Python313\python.exe"
-
-# 3. Instalar dependencias exactas (dentro del venv)
+# 3. Instalar dependencias completas del pipeline
 uv pip install --python .venv -r requirements.txt
 ```
 
 ---
 
-## 3. Puesta en Marcha de Ollama
+## 3. Puesta en Marcha de Ollama y Perfiles de Hardware
 
-Antes de lanzar un lote de producción, Ollama debe estar en ejecución y el modelo descargado:
-
+### A. Perfil Desarrollo y MVP Local (NVIDIA GeForce GTX 1650 4 GB VRAM)
 ```powershell
-# Descargar el modelo óptimo para 8-12 GB VRAM
-ollama pull qwen2.5:7b
+# Modelos textuales compactos (consumo VRAM ~2.0 - 2.4 GB, contexto 2048)
+ollama pull qwen2.5:3b
+ollama pull qwen2.5-coder:3b
+ollama pull qwen2.5:1.5b   # Fallback ligero
 
-# Iniciar el servicio local
-ollama serve
+# Modelo visual multimodal (VLM) para pruebas MVP locales
+ollama pull qwen2.5vl:3b
+```
+
+### B. Perfil Producción / Workstation (PNY Quadro RTX PRO 4000 24 GB Blackwell + i9-14900 + 128 GB RAM)
+```powershell
+# Modelos de producción de alta fidelidad y contexto largo (32K - 65K)
+ollama pull qwen2.5-coder:32b   # Ancla principal para doc_main, chat_ui y code_ui (~19.5 GB)
+ollama pull deepseek-r1:32b     # Razonamiento profundo y auditoría crítica (doc_deep)
+ollama pull qwen2.5:14b         # Procesador intermedio de alto rendimiento
+ollama pull qwen2.5:7b          # Ingesta masiva ultra-rápida (doc_fast)
+
+# Modelos visuales multimodales (VLM) para producción
+ollama pull qwen2.5vl:7b        # Comprensión de diagramas, layouts y tablas complejas (doc_vlm)
+ollama pull gemma3:4b           # Fallback multimodal ligero y documentos multilingües
 ```
 
 ---
@@ -52,55 +68,86 @@ ollama serve
 .\.venv\Scripts\python.exe procesador_lote.py --origen "datos/entrada" --destino "datos/salida" --tipo "general"
 ```
 
-### Argumentos de Línea de Comandos (CLI)
+### Argumentos CLI Completos
 
-| Argumento | Tipo | Valor por Defecto | Descripción |
+| Argumento | Tipo | Default | Descripción |
 |---|---|---|---|
-| `--origen` | `str` | `datos/entrada` | Carpeta raíz donde se ubican los documentos a procesar. |
-| `--destino` | `str` | `datos/salida` | Carpeta donde se depositarán los documentos corregidos. |
+| `--origen` | `str` | `datos/entrada` | Directorio raíz donde se ubican los documentos a procesar. |
+| `--destino` | `str` | `datos/salida` | Directorio destino para documentos corregidos y reconstruidos. |
 | `--tipo` | `str` | `general` | Estilo y prompt: `general`, `legal`, `tecnico`, `academico`, `comercial`. |
-| `--modelo` | `str` | `qwen2.5:7b` | Nombre del modelo en Ollama (`llama3.1:8b`, `qwen2.5:14b`). |
-| `--url` | `str` | `http://localhost:11434` | Endpoint de la API local de Ollama. |
+| `--modelo` | `str` | `qwen2.5:7b` | Modelo principal en Ollama (ej. `qwen2.5:3b` para GTX 1650). |
+| `--fallback` | `str` | `None` | Modelo secundario alternativo si el principal agota reintentos. |
+| `--chunk-size` | `int` | `3500` | Límite máximo de caracteres por chunk semántico (usar 1800 para 4 GB VRAM). |
+| `--url` | `str` | `http://localhost:11434` | Endpoint local de la API de Ollama. |
 
-### Ejemplo: Corrección de Contratos Legales
+### Ejemplos Prácticos de Ejecución
+
+#### Ejemplo 1: Lote Técnico en GPU GTX 1650 (Presupuesto 4 GB)
 ```powershell
 .\.venv\Scripts\python.exe procesador_lote.py `
-    --origen "C:\Documentos\Contratos" `
-    --destino "C:\Documentos\Contratos_Corregidos" `
-    --tipo "legal" `
-    --modelo "qwen2.5:7b"
+    --origen "datos/entrada_mvp/lote_c_tecnico" `
+    --destino "datos/salida_mvp" `
+    --tipo "tecnico" `
+    --modelo "qwen2.5-coder:3b" `
+    --chunk-size 1800
+```
+
+#### Ejemplo 2: Lote Ofimático Multiformato con Fallback
+```powershell
+.\.venv\Scripts\python.exe procesador_lote.py `
+    --origen "C:\Documentos\Ofimatica" `
+    --destino "C:\Documentos\Corregidos" `
+    --tipo "comercial" `
+    --modelo "qwen2.5:3b" `
+    --fallback "qwen2.5:1.5b"
 ```
 
 ---
 
-## 5. Auditoría, Ledger y Reanudación de Fallos
+## 5. Auditoría, Ledger y Aislamiento de Errores
 
-- **Ledger `historial_procesados.json`:** Se genera automáticamente dentro de la carpeta de salida. Almacena el hash SHA-256 de cada archivo completado con su tamaño, modelo y fecha. Si el proceso se detiene a la mitad, al volver a ejecutar omitirá instantáneamente los documentos ya finalizados.
-- **Aislamiento de Errores (`datos/errores/`):** Si un documento está corrupto o protegido con contraseña y falla la conversión o inferencia, se copia automáticamente a la carpeta de errores sin alterar el archivo original, permitiendo la continuidad ininterrumpida del lote.
+- **Ledger `historial_procesados.json`:** Registra el hash SHA-256 de cada documento procesado. Las re-ejecuciones son idempotentes y omiten archivos idénticos a más de **2.900 docs/segundo**.
+- **Aislamiento `datos/errores/`:** Los documentos corruptos, protegidos o malformados se archivan automáticamente en la carpeta de errores sin abortar el procesamiento del resto del lote.
+- **Sniffer de Magic Bytes:** Rechaza proactivamente ejecutables camuflados (`MZ`, `ELF`) evitando ataques o conversiones erróneas.
+- **Detección Anti-Mojibake:** Lectura multicapa UTF-8 -> CP1252 -> Latin-1 garantizando preservación de tildes y eñes en cualquier archivo Windows.
 
 ---
 
-## 6. Troubleshooting y Solución de Problemas Comunes
+## 6. Servidor API Web Local y Compatibilidad con Open WebUI
 
-### 1. `InferenciaError: No fue posible obtener respuesta de Ollama`
-- **Causa:** El servicio Ollama no está iniciado o la GPU se quedó sin memoria (OOM).
-- **Solución:**
-  1. Verificar que Ollama responda: `Invoke-RestMethod -Uri "http://localhost:11434/api/tags"`.
-  2. Si hubo CUDA OOM, reducir el tamaño de chunk a 2.500 caracteres en `config.py` o usar un modelo más ligero cuantizado a 4 bits.
+La plataforma expone un servidor FastAPI de alto rendimiento que incluye endpoints REST nativos y una pasarela compatible con OpenAI (`/v1`):
 
-### 2. Mojibakes en la Consola de PowerShell
-- **Causa:** PowerShell ejecutándose con página de códigos CP1252 o terminal heredada.
-- **Solución:** Ejecutar siempre en el encabezado del script o sesión:
-  ```powershell
-  [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
-  $OutputEncoding = [System.Text.Encoding]::UTF8
-  $env:PYTHONUTF8 = "1"
-  ```
+### Puesta en Marcha del Servidor
+```powershell
+.\.venv\Scripts\python.exe servidor_api.py
+```
+- **Frontend Web Local:** `http://localhost:8000` (Interfaz gráfica integrada).
+- **API Health Check:** `http://localhost:8000/api/salud`.
+- **Catálogo de Perfiles Activos:** `http://localhost:8000/api/perfiles`.
 
-### 3. Error `MissingDependencyException` al procesar Word o PDF
-- **Causa:** Faltan las extensiones completas de `MarkItDown`.
-- **Solución:** Ejecutar:
-  ```powershell
-  uv pip install --python .venv "markitdown[all]"
-  # Fallback ruta absoluta: & "C:\Users\mandi\.local\bin\uv.exe" pip install --python ".\.venv\Scripts\python.exe" "markitdown[all]"
-  ```
+### Configuración en Open WebUI
+Para utilizar la suite completa de perfiles lógicos desde Open WebUI:
+1. En Open WebUI, ir a **Configuración > Conexiones > Proveedores OpenAI**.
+2. Configurar la URL base: `http://localhost:8000/v1` (o la IP local de la máquina).
+3. Clave API: Cualquier valor simulado (ej. `local-key`).
+4. Los modelos aparecerán automáticamente listados por perfil operativo (`doc_fast`, `doc_main`, `doc_deep`, `chat_ui`, `code_ui`).
+
+---
+
+## 7. Gestión del Sistema de Backups
+
+El proyecto cuenta con un generador automatizado que mantiene **un único backup consolidado y optimizado** en `backup/`:
+
+```powershell
+# Actualizar el backup consolidado al estado actual
+.\.venv\Scripts\python.exe scripts/generar_backup.py
+```
+
+---
+
+## 8. Ejecución de la Suite de Pruebas Automatizadas (TDD)
+
+```powershell
+# Ejecutar todas las 84 pruebas unitarias e integración
+.\.venv\Scripts\pytest.exe -v
+```

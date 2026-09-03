@@ -1,0 +1,38 @@
+# AnythingLLM Multi-User Docker Compose - Entorno de Producción
+# Workstation RTX PRO 4000 24GB GDDR7 ECC + Intel Core i9-14900 (128 GB RAM)
+# Plataforma IA Local
+
+version: '3.8'
+
+services:
+  anythingllm-prod:
+    image: mintplexlabs/anythingllm:latest
+    container_name: anythingllm-multiuser-prod
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    environment:
+      - SERVER_PORT=3001
+      - STORAGE_DIR=/app/server/storage
+      - DISABLE_TELEMETRY=true
+      - JWT_SECRET=plataforma_ia_local_prod_workstation_secret_jwt_2026_ecc
+      - DISABLE_PRIVACY_WARNING=true
+      # Optimización de workers de Node.js para CPU i9-14900 (24 núcleos)
+      - UV_THREADPOOL_SIZE=32
+    volumes:
+      - ./docker_storage_prod:/app/server/storage
+    extra_hosts:
+      # Conexión directa hacia los servicios en el host Windows (Ollama en 11434 y FastAPI en 8000)
+      - "host.docker.internal:host-gateway"
+    deploy:
+      resources:
+        limits:
+          memory: 32G
+        reservations:
+          memory: 4G
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/api/ping"]
+      interval: 20s
+      timeout: 5s
+      retries: 3
+      start_period: 15s

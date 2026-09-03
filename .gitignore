@@ -1,0 +1,54 @@
+# Entornos virtuales
+.venv/
+env/
+venv/
+ENV/
+
+# Node.js y dependencias de frontend
+node_modules/
+**/node_modules/
+dist/
+build/
+
+# Byte-compiled / optimizados
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+
+# Pruebas y cobertura
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage/
+
+# Respaldos pesados y binarios comprimidos (preservar README en backup/)
+backup/*.tar.gz
+backup/*.zip
+backup/*.tar
+
+# Almacenamiento dinámico de Docker y sesiones
+docker_storage/
+docker_storage_prod/
+
+# Datos dinámicos y temporales de ejecución
+datos/salida/*
+!datos/salida/.gitkeep
+datos/salida_web/*
+!datos/salida_web/.gitkeep
+datos/errores/*
+!datos/errores/.gitkeep
+datos/assets/*
+!datos/assets/.gitkeep
+
+# Logs
+logs/*.log
+*.log
+
+# IDEs y configuración local
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+.firebase/

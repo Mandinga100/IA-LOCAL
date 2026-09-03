@@ -1,0 +1,10 @@
+Reunion del comite tecnico - 01 de Septiembre
+
+En la reunion de hoy se discutio la situacion del servidor principal y los problemas de coneccion que ocurrieron durante el fin de semana. El administrador informo que se detecto una caida en el servicio de base de datos deviso a una sobrecarga en la memoria RAM.
+
+Puntos acordados:
+1. Se realizara un reinicio programado todos los domingos a las 02:00 AM para liverar recursos del sistema.
+2. El equipo de soporte actualisara los certificados SSL antes del proximo miercoles.
+3. Se solicita a todos los usuarios verificar sus credensiales de aceso y reportar anomalidades al departamento de tecnologia.
+
+La proxima secion se llevara a cabo el lunes 08 de Septiembre a las 10:00 horas en la sala de conferensias principal.

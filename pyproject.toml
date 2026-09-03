@@ -1,0 +1,17 @@
+[project]
+name = "plataforma-ia-local"
+version = "0.1.0"
+description = "Plataforma de Procesamiento y Corrección de Documentos con IA Local"
+requires-python = ">=3.13"
+
+[tool.pyright]
+venvPath = "."
+venv = ".venv"
+extraPaths = [".venv/Lib/site-packages", "."]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+filterwarnings = [
+    "ignore::RuntimeWarning:pydub.utils"
+]

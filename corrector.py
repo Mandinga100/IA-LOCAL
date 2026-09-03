@@ -1,13 +1,13 @@
 """
 corrector.py - Motor de corrección semántica mediante IA local (Ollama).
-Gestiona chunking semántico por párrafos (\n\n), solapamiento seguro y reintentos.
+Gestiona chunking semántico jerárquico (párrafos -> oraciones), solapamiento seguro, reintentos y fallback.
 """
 
 import json
 import time
 from dataclasses import dataclass
 from pathlib import Path
-from typing import List, Optional
+from typing import List, Optional, Any
 import httpx
 
 from config import Config
@@ -24,29 +24,83 @@ class ChunkTexto:
     total_chunks: int
     contenido: str
 
+def _subdividir_parrafo_largo(parrafo: str, max_chars: int) -> List[str]:
+    """Subdivide un párrafo continuo que excede max_chars utilizando oraciones o líneas."""
+    if len(parrafo) <= max_chars:
+        return [parrafo]
+
+    # Intentar división por saltos de línea simples
+    if "\n" in parrafo:
+        sub_lineas = parrafo.split("\n")
+        bloques: List[str] = []
+        actual: List[str] = []
+        long_actual = 0
+        for linea in sub_lineas:
+            tam = len(linea) + 1
+            if long_actual + tam > max_chars and actual:
+                bloques.append("\n".join(actual))
+                actual = [linea]
+                long_actual = tam
+            else:
+                actual.append(linea)
+                long_actual += tam
+        if actual:
+            bloques.append("\n".join(actual))
+        return bloques
+
+    # Intentar división por oraciones (punto seguido)
+    partes = parrafo.split(". ")
+    bloques = []
+    actual = []
+    long_actual = 0
+
+    for parte in partes:
+        oracion = parte + ". "
+        tam = len(oracion)
+        if long_actual + tam > max_chars and actual:
+            bloques.append("".join(actual).strip())
+            actual = [oracion]
+            long_actual = tam
+        else:
+            actual.append(oracion)
+            long_actual += tam
+
+    if actual:
+        bloques.append("".join(actual).strip())
+
+    return bloques if bloques else [parrafo]
+
 def dividir_en_chunks(
     texto: str,
     max_chars: int = 3500,
     overlap: int = 200
 ) -> List[ChunkTexto]:
     """
-    Divide un texto en chunks semánticos respetando saltos de párrafo doble (\n\n).
-    Garantiza que no se dividan oraciones ni tablas arbitrariamente.
+    Divide un texto en chunks semánticos respetando saltos de párrafo (\n\n)
+    y subdividiendo párrafos anómalos que excedan max_chars.
     """
     if not texto.strip():
         return []
-        
+
     if len(texto) <= max_chars:
         return [ChunkTexto(indice=1, total_chunks=1, contenido=texto)]
 
-    parrafos = texto.split("\n\n")
+    parrafos_crudos = texto.split("\n\n")
+    parrafos_procesados: List[str] = []
+
+    for p in parrafos_crudos:
+        if len(p) > max_chars:
+            parrafos_procesados.extend(_subdividir_parrafo_largo(p, max_chars))
+        else:
+            parrafos_procesados.append(p)
+
     chunks_str: List[str] = []
     chunk_actual: List[str] = []
     longitud_actual = 0
 
-    for parrafo in parrafos:
+    for parrafo in parrafos_procesados:
         tam_parrafo = len(parrafo) + 2  # +2 por \n\n
-        
+
         if longitud_actual + tam_parrafo > max_chars and chunk_actual:
             chunks_str.append("\n\n".join(chunk_actual))
             chunk_actual = [parrafo]
@@ -64,13 +118,35 @@ def dividir_en_chunks(
         for i, contenido in enumerate(chunks_str)
     ]
 
+def _limpiar_respuesta_llm(texto: str) -> str:
+    """Elimina delimitadores de prompt o envoltorios markdown redundantes generados por el LLM."""
+    limpio = texto.replace("<documento_a_corregir>", "").replace("</documento_a_corregir>", "").strip()
+
+    # Desempaquetar si el modelo envolvió toda la respuesta en un bloque ```markdown ... ```
+    if limpio.startswith("```markdown\n") and limpio.endswith("\n```"):
+        limpio = limpio[len("```markdown\n"):-len("\n```")].strip()
+    elif limpio.startswith("```\n") and limpio.endswith("\n```"):
+        limpio = limpio[len("```\n"):-len("\n```")].strip()
+
+    return limpio
+
 class CorrectorOllama:
-    """Cliente robusto para inferencia de corrección con Ollama."""
+    """Cliente robusto para inferencia de corrección con Ollama y gestión de ciclo de vida."""
 
     def __init__(self, config: Config, ruta_prompts: Path | str = "prompts.json") -> None:
         self.config = config
         self.prompts = self._cargar_prompts(Path(ruta_prompts))
         self.client = httpx.Client(timeout=self.config.timeout_inferencia_segundos)
+
+    def close(self) -> None:
+        """Cierra el cliente HTTP y libera conexiones de red subyacentes."""
+        self.client.close()
+
+    def __enter__(self) -> "CorrectorOllama":
+        return self
+
+    def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
+        self.close()
 
     def _cargar_prompts(self, ruta: Path) -> dict:
         if not ruta.exists():
@@ -106,10 +182,8 @@ class CorrectorOllama:
 
                 if response.status_code == 200:
                     data = response.json()
-                    texto_corregido = data.get("response", "").strip()
-                    # Limpiar posibles delimitadores que el modelo haya repetido
-                    texto_corregido = texto_corregido.replace("<documento_a_corregir>", "").replace("</documento_a_corregir>", "").strip()
-                    return texto_corregido
+                    raw_text = data.get("response", "").strip()
+                    return _limpiar_respuesta_llm(raw_text)
                 else:
                     logger.warning(f"Error HTTP {response.status_code} desde Ollama: {response.text}")
             except (httpx.ConnectError, httpx.TimeoutException, httpx.HTTPError) as e:
@@ -131,8 +205,8 @@ class CorrectorOllama:
                 response_fb = self.client.post(url, json=payload_fallback)
                 if response_fb.status_code == 200:
                     data_fb = response_fb.json()
-                    texto_fb = data_fb.get("response", "").strip()
-                    texto_fb = texto_fb.replace("<documento_a_corregir>", "").replace("</documento_a_corregir>", "").strip()
+                    raw_fb = data_fb.get("response", "").strip()
+                    texto_fb = _limpiar_respuesta_llm(raw_fb)
                     logger.info(f"Fallback '{modelo_fallback}' respondió exitosamente.")
                     return texto_fb
                 else:
@@ -158,7 +232,7 @@ class CorrectorOllama:
 
         prompt_sistema = self.prompts.get(tipo_documento, self.prompts.get("general", ""))
         chunks = dividir_en_chunks(texto, max_chars=self.config.chunk_size, overlap=self.config.chunk_overlap)
-        
+
         logger.info(f"Procesando texto dividido en {len(chunks)} chunk(s)...")
         resultados_chunks: List[str] = []
 

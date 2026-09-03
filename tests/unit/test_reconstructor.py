@@ -164,3 +164,28 @@ class TestGuardarDocumentoCorregido:
         ruta_anidada = tmp_path / "nivel1" / "nivel2" / "doc.txt"
         guardar_documento_corregido("Texto.", origen, ruta_anidada)
         assert ruta_anidada.exists()
+
+    def test_exportar_pdf_y_docx_con_imagen_incrustada(self, tmp_path: Path) -> None:
+        """Verifica que exportar_documento_formato incrusta imágenes en PDF y DOCX."""
+        from PIL import Image
+        from reconstructor import exportar_documento_formato
+
+        # Crear imagen sintética
+        img_path = tmp_path / "logo.png"
+        img = Image.new("RGB", (60, 40), color="green")
+        img.save(str(img_path))
+
+        texto_con_imagen = f"# Documento Visual\n\n![Logotipo Empresa]({img_path.resolve()})\n\nPárrafo de cierre."
+
+        # Probar exportación a PDF
+        pdf_dest = tmp_path / "salida" / "doc_con_img.pdf"
+        res_pdf = exportar_documento_formato(texto_con_imagen, pdf_dest, ".pdf")
+        assert res_pdf.exists()
+        assert res_pdf.stat().st_size > 0
+
+        # Probar exportación a DOCX
+        docx_dest = tmp_path / "salida" / "doc_con_img.docx"
+        res_docx = exportar_documento_formato(texto_con_imagen, docx_dest, ".docx")
+        assert res_docx.exists()
+        assert res_docx.stat().st_size > 0
+

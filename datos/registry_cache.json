@@ -1,0 +1,62 @@
+{
+  "qwen2.5vl:3b": {
+    "name": "qwen2.5vl:3b",
+    "family": "qwen25vl",
+    "parameter_size": "3.8B",
+    "quantization": "Q4_K_M",
+    "digest": "fb90415cde1ef08aa669ae74b082d49b158729b6db1ab183c941417d507e71a1",
+    "capabilities": {
+      "supports_tools": true,
+      "supports_json": true,
+      "supports_reasoning": true,
+      "supports_vision": false,
+      "has_thinking_tags": false,
+      "is_coding_specialist": false,
+      "is_embedding_model": false,
+      "max_recommended_ctx": 65536,
+      "sweet_spot_ctx": 32768
+    },
+    "vram_estimated_mb": 3494,
+    "context_window_native": 65536
+  },
+  "qwen2.5-coder:3b": {
+    "name": "qwen2.5-coder:3b",
+    "family": "qwen2",
+    "parameter_size": "3.1B",
+    "quantization": "Q4_K_M",
+    "digest": "f72c60cabf6237b07f6e632b2c48d533cef25eda2efbd34bed21c5e9c01e6225",
+    "capabilities": {
+      "supports_tools": true,
+      "supports_json": true,
+      "supports_reasoning": true,
+      "supports_vision": false,
+      "has_thinking_tags": false,
+      "is_coding_specialist": true,
+      "is_embedding_model": false,
+      "max_recommended_ctx": 65536,
+      "sweet_spot_ctx": 32768
+    },
+    "vram_estimated_mb": 3039,
+    "context_window_native": 65536
+  },
+  "qwen2.5:3b": {
+    "name": "qwen2.5:3b",
+    "family": "qwen2",
+    "parameter_size": "3.1B",
+    "quantization": "Q4_K_M",
+    "digest": "357c53fb659c5076de1d65ccb0b397446227b71a42be9d1603d46168015c9e4b",
+    "capabilities": {
+      "supports_tools": true,
+      "supports_json": true,
+      "supports_reasoning": true,
+      "supports_vision": false,
+      "has_thinking_tags": false,
+      "is_coding_specialist": false,
+      "is_embedding_model": false,
+      "max_recommended_ctx": 65536,
+      "sweet_spot_ctx": 32768
+    },
+    "vram_estimated_mb": 3039,
+    "context_window_native": 65536
+  }
+}

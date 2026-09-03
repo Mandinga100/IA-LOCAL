@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "plataforma_ia_local": {
+      "command": "C:\\Users\\mandi\\Documents\\Proyectos\\Plataforma IA local\\.venv\\Scripts\\python.exe",
+      "args": [
+        "C:\\Users\\mandi\\Documents\\Proyectos\\Plataforma IA local\\mcp_server.py"
+      ],
+      "env": {
+        "PYTHONIOENCODING": "utf-8"
+      }
+    }
+  }
+}
