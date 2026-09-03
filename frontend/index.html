@@ -789,7 +789,482 @@
       border-top: 1px solid var(--border-subtle);
       margin-top: 32px;
     }
+
+    /* ==========================================================================
+       SISTEMA DE PESTAÑAS SENIOR-ENTERPRISE Y DASHBOARD 360°
+       ========================================================================== */
+    .enterprise-tabs-nav {
+      display: flex;
+      gap: 8px;
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 8px;
+      margin-bottom: 24px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+      overflow-x: auto;
+    }
+
+    .nav-tab-btn {
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-muted);
+      padding: 10px 18px;
+      border-radius: var(--radius-sm);
+      font-family: var(--font-heading);
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+      white-space: nowrap;
+    }
+
+    .nav-tab-btn:hover {
+      color: var(--text-main);
+      background: rgba(255, 255, 255, 0.05);
+      border-color: rgba(255, 255, 255, 0.08);
+    }
+
+    .nav-tab-btn.active {
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.22), rgba(6, 182, 212, 0.22));
+      border-color: rgba(99, 102, 241, 0.45);
+      color: #ffffff;
+      box-shadow: 0 4px 16px rgba(99, 102, 241, 0.25);
+    }
+
+    .tab-badge {
+      font-size: 0.72rem;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      font-weight: 500;
+    }
+
+    .nav-tab-btn.active .tab-badge {
+      background: var(--primary);
+      color: #ffffff;
+      border-color: transparent;
+    }
+
+    .tab-badge.pulse {
+      background: rgba(16, 185, 129, 0.2);
+      color: #34d399;
+      border-color: rgba(16, 185, 129, 0.4);
+    }
+
+    .tab-badge.danger {
+      background: rgba(239, 68, 68, 0.2);
+      color: #f87171;
+      border-color: rgba(239, 68, 68, 0.4);
+    }
+
+    /* Paneles de Pestañas */
+    .tab-pane {
+      display: none;
+      animation: fadeInPane 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .tab-pane.active {
+      display: block;
+    }
+
+    @keyframes fadeInPane {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* HUD Grids para Hardware y Telemetría */
+    .hud-grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      margin-bottom: 24px;
+    }
+
+    .hud-grid-4 {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .hud-card {
+      background: var(--bg-card);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 22px;
+      box-shadow: var(--shadow-glass);
+      transition: var(--transition);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hud-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--primary), transparent);
+      opacity: 0.4;
+    }
+
+    .hud-card:hover {
+      border-color: rgba(99, 102, 241, 0.35);
+      transform: translateY(-2px);
+    }
+
+    .hud-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .hud-card-title {
+      font-family: var(--font-heading);
+      font-size: 1.05rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .hud-kpi-main {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .hud-kpi-val {
+      font-family: var(--font-heading);
+      font-size: 2.3rem;
+      font-weight: 800;
+      color: #ffffff;
+      letter-spacing: -1px;
+    }
+
+    .hud-kpi-unit {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .hud-kpi-sub {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+      margin-top: 8px;
+    }
+
+    /* Gauge Circular SVG */
+    .gauge-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin: 12px 0;
+    }
+
+    .gauge-svg {
+      width: 140px;
+      height: 140px;
+      transform: rotate(-90deg);
+    }
+
+    .gauge-bg {
+      fill: none;
+      stroke: rgba(255, 255, 255, 0.08);
+      stroke-width: 10;
+    }
+
+    .gauge-progress {
+      fill: none;
+      stroke: url(#gaugeGradient);
+      stroke-width: 10;
+      stroke-linecap: round;
+      transition: stroke-dashoffset 0.8s ease;
+    }
+
+    /* Termómetro visual */
+    .thermo-display {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin: 16px 0;
+    }
+
+    .thermo-graphic {
+      width: 24px;
+      height: 120px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 999px;
+      padding: 3px;
+      position: relative;
+      display: flex;
+      flex-direction: column-reverse;
+    }
+
+    .thermo-fill {
+      width: 100%;
+      border-radius: 999px;
+      background: linear-gradient(0deg, #10b981, #f59e0b, #ef4444);
+      transition: height 0.6s ease;
+      height: 35%;
+    }
+
+    .thermo-info {
+      flex: 1;
+    }
+
+    .thermal-status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      margin-bottom: 8px;
+    }
+
+    .thermal-status-pill.warning {
+      background: rgba(245, 158, 11, 0.15);
+      color: #fbbf24;
+      border-color: rgba(245, 158, 11, 0.3);
+    }
+
+    .thermal-status-pill.critical {
+      background: rgba(239, 68, 68, 0.2);
+      color: #f87171;
+      border-color: rgba(239, 68, 68, 0.4);
+      animation: pulseAlert 1.5s infinite;
+    }
+
+    @keyframes pulseAlert {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+
+    /* Gráfico de Canvas para Hardware e Historial */
+    .chart-canvas-wrap {
+      background: rgba(11, 15, 25, 0.7);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 12px;
+      margin-top: 14px;
+    }
+
+    .chart-canvas {
+      width: 100%;
+      height: 90px;
+      display: block;
+    }
+
+    /* Terminal de Logs de Seguridad y Auditoría */
+    .security-terminal {
+      background: #040711;
+      border: 1px solid rgba(99, 102, 241, 0.25);
+      border-radius: var(--radius-md);
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+      overflow: hidden;
+    }
+
+    .terminal-topbar {
+      background: rgba(15, 23, 42, 0.95);
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .terminal-dots {
+      display: flex;
+      gap: 6px;
+    }
+
+    .terminal-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    .terminal-dot.red { background: #ef4444; }
+    .terminal-dot.yellow { background: #f59e0b; }
+    .terminal-dot.green { background: #10b981; }
+
+    .terminal-body {
+      padding: 14px;
+      max-height: 440px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .log-row {
+      display: grid;
+      grid-template-columns: 140px 90px 120px 1fr;
+      gap: 10px;
+      padding: 6px 10px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.02);
+      border-left: 3px solid #64748b;
+      align-items: center;
+      transition: background 0.15s ease;
+    }
+
+    .log-row:hover {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .log-row.critical {
+      border-left-color: #ef4444;
+      background: rgba(239, 68, 68, 0.06);
+    }
+
+    .log-row.warn {
+      border-left-color: #f59e0b;
+      background: rgba(245, 158, 11, 0.06);
+    }
+
+    .log-row.info {
+      border-left-color: #06b6d4;
+    }
+
+    .log-tag {
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .log-tag.critical { background: rgba(239, 68, 68, 0.25); color: #f87171; }
+    .log-tag.warn { background: rgba(245, 158, 11, 0.25); color: #fbbf24; }
+    .log-tag.info { background: rgba(6, 182, 212, 0.25); color: #67e8f9; }
+
+    /* Tabla de Procesos Activos (htop / Task Manager) */
+    .process-table-container {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      overflow-x: auto;
+      margin-top: 16px;
+    }
+
+    .process-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.84rem;
+    }
+
+    .process-table th {
+      background: rgba(15, 23, 42, 0.8);
+      padding: 12px 16px;
+      color: var(--text-muted);
+      font-weight: 600;
+      border-bottom: 1px solid var(--border-subtle);
+      text-transform: uppercase;
+      font-size: 0.75rem;
+      letter-spacing: 0.5px;
+    }
+
+    .process-table td {
+      padding: 12px 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      color: var(--text-main);
+    }
+
+    .process-table tr:hover {
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .pid-badge {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      background: rgba(255, 255, 255, 0.06);
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: var(--secondary);
+    }
+
+    .proc-bar-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .proc-bar {
+      flex: 1;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 99px;
+      overflow: hidden;
+      min-width: 60px;
+    }
+
+    .proc-bar-fill {
+      height: 100%;
+      border-radius: 99px;
+      background: var(--primary);
+    }
+
+    /* Redes y Servicios */
+    .services-status-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-top: 20px;
+    }
+
+    .service-card {
+      background: rgba(11, 15, 25, 0.8);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .service-info h4 {
+      font-size: 0.92rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .service-info p {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+    }
+
+    @media (max-width: 1024px) {
+      .hud-grid-3, .hud-grid-4, .services-status-grid {
+        grid-template-columns: 1fr;
+      }
+    }
   </style>
+
 </head>
 <body>
 
@@ -838,8 +1313,42 @@
       </div>
     </div>
 
-    <!-- Grid de 3 Columnas -->
-    <div class="workspace-grid">
+    <!-- Navegación Superior por Pestañas Senior-Enterprise -->
+    <nav class="enterprise-tabs-nav">
+      <button class="nav-tab-btn active" data-tab="tab-documentos" id="tabBtnDocs">
+        <span style="font-size: 16px;">📄</span>
+        <span>Procesador & Test</span>
+        <span class="tab-badge">Core</span>
+      </button>
+      <button class="nav-tab-btn" data-tab="tab-gpu" id="tabBtnGpu">
+        <span style="font-size: 16px;">⚡</span>
+        <span>Telemetría GPU & VRAM</span>
+        <span class="tab-badge pulse" id="tabGpuTempBadge">--°C</span>
+      </button>
+      <button class="nav-tab-btn" data-tab="tab-red" id="tabBtnRed">
+        <span style="font-size: 16px;">🌐</span>
+        <span>Tráfico de Red & I/O</span>
+        <span class="tab-badge" id="tabNetRateBadge">0 KB/s</span>
+      </button>
+      <button class="nav-tab-btn" data-tab="tab-seguridad" id="tabBtnSeguridad">
+        <span style="font-size: 16px;">🛡️</span>
+        <span>Auditoría & Logs de Seguridad</span>
+        <span class="tab-badge pulse" id="tabSecAlertsBadge">Seguro</span>
+      </button>
+      <button class="nav-tab-btn" data-tab="tab-procesos" id="tabBtnProcesos">
+        <span style="font-size: 16px;">🖥️</span>
+        <span>Monitor de Procesos Activos</span>
+        <span class="tab-badge" id="tabProcCountBadge">Host</span>
+      </button>
+    </nav>
+
+    <!-- ==========================================================================
+         PESTAÑA 1: PROCESADOR Y TEST DOCUMENTAL (CORE ORIGINAL PRESERVADO)
+         ========================================================================== -->
+    <div id="tab-documentos" class="tab-pane active">
+      <!-- Grid de 3 Columnas Original -->
+      <div class="workspace-grid">
+
       
       <!-- Columna 1: Carga y Parámetros -->
       <div class="glass-card">
@@ -1085,9 +1594,414 @@
       </div>
 
     </div>
+    </div> <!-- Cierre de #tab-documentos -->
+
+    <!-- ==========================================================================
+         PESTAÑA 2: TELEMETRÍA AVANZADA GPU & HARDWARE 360°
+         ========================================================================== -->
+    <div id="tab-gpu" class="tab-pane">
+      
+      <!-- Fila 1: Gauges y Monitores Principales -->
+      <div class="hud-grid-3">
+        
+        <!-- Tarjeta VRAM -->
+        <div class="hud-card">
+          <div class="hud-card-header">
+            <h3 class="hud-card-title"><span>🎮</span> Memoria VRAM Dedicada</h3>
+            <span class="tab-badge" id="vramStatusBadge">100% GPU</span>
+          </div>
+          <div class="gauge-container">
+            <svg class="gauge-svg" viewBox="0 0 100 100">
+              <defs>
+                <linearGradient id="gaugeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#06b6d4" />
+                  <stop offset="100%" stop-color="#6366f1" />
+                </linearGradient>
+              </defs>
+              <circle class="gauge-bg" cx="50" cy="50" r="40" />
+              <circle class="gauge-progress" id="svgGaugeVram" cx="50" cy="50" r="40" stroke-dasharray="251.2" stroke-dashoffset="200" />
+            </svg>
+            <div style="position: absolute; text-align: center;">
+              <span style="font-family: var(--font-heading); font-size: 1.5rem; font-weight: 800; color: #fff;" id="vramGaugePercent">20%</span>
+              <div style="font-size: 0.68rem; color: var(--text-muted); text-transform: uppercase;">Ocupación</div>
+            </div>
+          </div>
+          <div class="hud-kpi-sub">
+            <span>Usada: <strong id="vramUsadaBig" style="color: #fff;">814 MB</strong></span>
+            <span>Libre: <strong id="vramLibreBig" style="color: #34d399;">3282 MB</strong></span>
+            <span>Total: <strong id="vramTotalBig" style="color: var(--text-muted);">4096 MB</strong></span>
+          </div>
+          <div style="margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--border-subtle); font-size: 0.78rem; color: var(--text-muted);">
+            <span>Frecuencia VRAM: <strong id="gpuMemClockVal" style="color: #fff; font-family: var(--font-mono);">-- MHz</strong></span>
+          </div>
+        </div>
+
+        <!-- Tarjeta Cómputo GPU -->
+        <div class="hud-card">
+          <div class="hud-card-header">
+            <h3 class="hud-card-title"><span>⚡</span> Cómputo & Núcleo CUDA</h3>
+            <span class="tab-badge" id="gpuModelBadge">NVIDIA GTX 1650</span>
+          </div>
+          <div class="hud-kpi-main">
+            <span class="hud-kpi-val" id="gpuUtilBig">4</span>
+            <span class="hud-kpi-unit">% UTILIZACIÓN</span>
+          </div>
+          <div class="meter-container" style="margin-top: 12px;">
+            <div class="meter-bar">
+              <div class="meter-fill" id="gpuUtilBarFill" style="width: 4%;"></div>
+            </div>
+          </div>
+          <div class="hud-kpi-sub" style="margin-top: 16px;">
+            <span>Frecuencia Core: <strong id="gpuCoreClockVal" style="color: #fff; font-family: var(--font-mono);">-- MHz</strong></span>
+            <span>Potencia Draw: <strong id="gpuPowerVal" style="color: #f59e0b; font-family: var(--font-mono);">-- W</strong></span>
+          </div>
+          <div style="margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--border-subtle); font-size: 0.78rem; color: var(--text-muted);">
+            <span>Régimen Inferencia: <strong style="color: #34d399;">Residencia Caliente (Keep-Alive 24h)</strong></span>
+          </div>
+        </div>
+
+        <!-- Tarjeta Seguridad Térmica -->
+        <div class="hud-card">
+          <div class="hud-card-header">
+            <h3 class="hud-card-title"><span>🌡️</span> Monitor Térmico & Seguridad</h3>
+            <span class="thermal-status-pill" id="thermoStatusPill">
+              <span>●</span> ÓPTIMO (&lt;65°C)
+            </span>
+          </div>
+          <div class="thermo-display">
+            <div class="thermo-graphic">
+              <div class="thermo-fill" id="thermoFillBar" style="height: 31%;"></div>
+            </div>
+            <div class="thermo-info">
+              <div style="display: flex; align-items: baseline; gap: 6px;">
+                <span class="hud-kpi-val" id="gpuTempBig">31</span>
+                <span class="hud-kpi-unit">°C ACTUAL</span>
+              </div>
+              <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">
+                Pico máximo sesión: <strong id="gpuMaxTempBig" style="color: #f59e0b; font-family: var(--font-mono);">31°C</strong>
+              </p>
+              <p style="font-size: 0.74rem; color: var(--text-dim); margin-top: 4px;">
+                Umbral de advertencia: <strong>75°C</strong> | Corte crítico: <strong>82°C</strong>
+              </p>
+            </div>
+          </div>
+          <!-- Canvas Gráfico Histórico en vivo -->
+          <div class="chart-canvas-wrap">
+            <canvas id="gpuTempChart" class="chart-canvas"></canvas>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Fila 2: Presupuesto de Hardware y Arquitectura Bi-Entorno -->
+      <div class="hud-card" style="margin-bottom: 24px;">
+        <div class="hud-card-header">
+          <h3 class="hud-card-title"><span>📐</span> Presupuesto Matemático de VRAM y Concurrencia de Slots</h3>
+          <span class="tab-badge" style="background: rgba(99, 102, 241, 0.2); color: #818cf8;">Calibrado Zero-Paging</span>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 10px;">
+          <div style="background: rgba(11, 15, 25, 0.7); padding: 14px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
+            <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px;">PESOS MODELO (QWEN 3B)</div>
+            <div style="font-family: var(--font-mono); font-size: 1.15rem; font-weight: 700; color: #fff;">~1.900 MB</div>
+            <div style="font-size: 0.72rem; color: var(--text-dim); margin-top: 2px;">Cuantización Q4_K_M</div>
+          </div>
+          <div style="background: rgba(11, 15, 25, 0.7); padding: 14px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
+            <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px;">KV-CACHE (2 SLOTS @ 2048 CTX)</div>
+            <div style="font-family: var(--font-mono); font-size: 1.15rem; font-weight: 700; color: #06b6d4;">~640 MB</div>
+            <div style="font-size: 0.72rem; color: var(--text-dim); margin-top: 2px;">Slots paralelos simultáneos</div>
+          </div>
+          <div style="background: rgba(11, 15, 25, 0.7); padding: 14px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
+            <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px;">CUDA & DRIVER OVERHEAD</div>
+            <div style="font-family: var(--font-mono); font-size: 1.15rem; font-weight: 700; color: #f59e0b;">~300 MB</div>
+            <div style="font-size: 0.72rem; color: var(--text-dim); margin-top: 2px;">Kernels del sistema Windows</div>
+          </div>
+          <div style="background: rgba(11, 15, 25, 0.7); padding: 14px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
+            <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px;">MARGEN DE SEGURIDAD LIBRE</div>
+            <div style="font-family: var(--font-mono); font-size: 1.15rem; font-weight: 700; color: #34d399;">~1.250 MB</div>
+            <div style="font-size: 0.72rem; color: var(--text-dim); margin-top: 2px;">Buffer contra OOM</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ==========================================================================
+         PESTAÑA 3: CONSUMO Y TRÁFICO DE RED / I/O
+         ========================================================================== -->
+    <div id="tab-red" class="tab-pane">
+      
+      <!-- Fila 1: KPIs de Tráfico de Red -->
+      <div class="hud-grid-4">
+        
+        <div class="hud-card">
+          <div class="hud-card-header">
+            <h3 class="hud-card-title" style="font-size: 0.95rem;"><span>📥</span> Throughput Entrada</h3>
+            <span class="tab-badge" id="netInRateBadge">0 KB/s</span>
+          </div>
+          <div class="hud-kpi-main">
+            <span class="hud-kpi-val" id="netInRateBig">0.0</span>
+            <span class="hud-kpi-unit">KB/s</span>
+          </div>
+          <p style="font-size: 0.78rem; color: var(--text-muted);" id="netInMbps">0.00 Mbps</p>
+        </div>
+
+        <div class="hud-card">
+          <div class="hud-card-header">
+            <h3 class="hud-card-title" style="font-size: 0.95rem;"><span>📤</span> Throughput Salida</h3>
+            <span class="tab-badge" id="netOutRateBadge">0 KB/s</span>
+          </div>
+          <div class="hud-kpi-main">
+            <span class="hud-kpi-val" id="netOutRateBig">0.0</span>
+            <span class="hud-kpi-unit">KB/s</span>
+          </div>
+          <p style="font-size: 0.78rem; color: var(--text-muted);" id="netOutMbps">0.00 Mbps</p>
+        </div>
+
+        <div class="hud-card">
+          <div class="hud-card-header">
+            <h3 class="hud-card-title" style="font-size: 0.95rem;"><span>📦</span> Datos Transferidos</h3>
+            <span class="tab-badge">Sesión</span>
+          </div>
+          <div class="hud-kpi-main">
+            <span class="hud-kpi-val" id="netTotalMbBig">0.0</span>
+            <span class="hud-kpi-unit">MB TOTAL</span>
+          </div>
+          <div class="hud-kpi-sub">
+            <span>In: <strong id="netRecvMbSub" style="color: #06b6d4;">0 MB</strong></span>
+            <span>Out: <strong id="netSentMbSub" style="color: #a855f7;">0 MB</strong></span>
+          </div>
+        </div>
+
+        <div class="hud-card">
+          <div class="hud-card-header">
+            <h3 class="hud-card-title" style="font-size: 0.95rem;"><span>🔄</span> Paquetes de Red</h3>
+            <span class="tab-badge">I/O Stack</span>
+          </div>
+          <div class="hud-kpi-main">
+            <span class="hud-kpi-val" id="netPacketsBig">0</span>
+            <span class="hud-kpi-unit">PKTS</span>
+          </div>
+          <p style="font-size: 0.78rem; color: var(--text-muted);">Protocolo: TCP/IP Local + HTTP/1.1</p>
+        </div>
+
+      </div>
+
+      <!-- Fila 2: Osciloscopio de Tráfico y Matriz de Puertos -->
+      <div class="hud-card" style="margin-bottom: 24px;">
+        <div class="hud-card-header">
+          <h3 class="hud-card-title"><span>📡</span> Osciloscopio de Ancho de Banda en Tiempo Real</h3>
+          <span class="tab-badge" style="background: rgba(6, 182, 212, 0.2); color: #22d3ee;">Live Delta I/O</span>
+        </div>
+        <div class="chart-canvas-wrap" style="height: 140px; margin-top: 8px;">
+          <canvas id="networkChart" class="chart-canvas" style="height: 120px;"></canvas>
+        </div>
+
+        <!-- Matriz de Servicios y Puertos Locales -->
+        <h4 style="font-family: var(--font-heading); font-size: 0.92rem; margin-top: 20px; color: var(--text-main);">Matriz de Servicios y Salud de Conexión</h4>
+        <div class="services-status-grid">
+          <div class="service-card">
+            <div class="service-info">
+              <h4>Gateway REST & Visor</h4>
+              <p>http://localhost:8000 (FastAPI)</p>
+            </div>
+            <span class="tab-badge pulse" id="svcGatewayStatus">Online (0 ms)</span>
+          </div>
+
+          <div class="service-card">
+            <div class="service-info">
+              <h4>Motor Ollama Inferencia</h4>
+              <p>http://localhost:11434 (LLM)</p>
+            </div>
+            <span class="tab-badge" id="svcOllamaStatus">Verificando...</span>
+          </div>
+
+          <div class="service-card">
+            <div class="service-info">
+              <h4>AnythingLLM Multi-User</h4>
+              <p>http://localhost:3001 (Docker)</p>
+            </div>
+            <span class="tab-badge" id="svcDockerStatus">Puerto 3001</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ==========================================================================
+         PESTAÑA 4: AUDITORÍA Y LOGS DE SEGURIDAD 360°
+         ========================================================================== -->
+    <div id="tab-seguridad" class="tab-pane">
+      
+      <!-- Banner de Estado de Ciberseguridad -->
+      <div class="hud-card" style="margin-bottom: 20px;">
+        <div class="hud-card-header">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <span style="font-size: 28px;">🛡️</span>
+            <div>
+              <h3 class="hud-card-title" style="margin-bottom: 2px;">Centro de Auditoría, Gobernanza y Seguridad Operativa</h3>
+              <p style="font-size: 0.8rem; color: var(--text-muted);">Monitoreo continuo de incidentes térmicos, saturación de hardware y blindaje criptográfico /ECC</p>
+            </div>
+          </div>
+          <div style="display: flex; gap: 10px;">
+            <button id="btnDispararAlertaTest" class="btn-secondary" style="font-size: 0.78rem;">
+              <span>🧪</span> Disparar Alerta de Prueba
+            </button>
+            <button id="btnExportarLogsJson" class="btn-secondary" style="font-size: 0.78rem;">
+              <span>💾</span> Exportar Bitácora JSON
+            </button>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 14px;">
+          <div style="background: rgba(11, 15, 25, 0.7); padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
+            <div style="font-size: 0.72rem; color: var(--text-muted);">ESTADO DE GOBERNANZA ECC</div>
+            <div style="font-weight: 700; color: #34d399; font-size: 0.95rem; margin-top: 2px;">INMUTABLE (SHA-256)</div>
+            <div style="font-size: 0.68rem; color: var(--text-dim); font-family: var(--font-mono); margin-top: 2px;">b42c3725f996d29...</div>
+          </div>
+          <div style="background: rgba(11, 15, 25, 0.7); padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
+            <div style="font-size: 0.72rem; color: var(--text-muted);">ALERTAS CRÍTICAS</div>
+            <div style="font-weight: 700; color: #f87171; font-size: 1.15rem; margin-top: 2px;" id="countAlertasCriticas">0</div>
+            <div style="font-size: 0.68rem; color: var(--text-dim);">Riesgo de hardware</div>
+          </div>
+          <div style="background: rgba(11, 15, 25, 0.7); padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
+            <div style="font-size: 0.72rem; color: var(--text-muted);">ADVERTENCIAS PREVENTIVAS</div>
+            <div style="font-weight: 700; color: #fbbf24; font-size: 1.15rem; margin-top: 2px;" id="countAlertasWarnings">0</div>
+            <div style="font-size: 0.68rem; color: var(--text-dim);">Picos de temp / VRAM</div>
+          </div>
+          <div style="background: rgba(11, 15, 25, 0.7); padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
+            <div style="font-size: 0.72rem; color: var(--text-muted);">TOTAL EVENTOS AUDITADOS</div>
+            <div style="font-weight: 700; color: #06b6d4; font-size: 1.15rem; margin-top: 2px;" id="countTotalEventos">0</div>
+            <div style="font-size: 0.68rem; color: var(--text-dim);">En buffer circular (250)</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filtros y Consola Terminal de Logs -->
+      <div class="security-terminal">
+        <div class="terminal-topbar">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <div class="terminal-dots">
+              <span class="terminal-dot red"></span>
+              <span class="terminal-dot yellow"></span>
+              <span class="terminal-dot green"></span>
+            </div>
+            <span style="font-weight: 600; color: #cbd5e1;">bitacora-seguridad@ia-local:~#</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <input type="text" id="filtroLogsTexto" placeholder="Filtrar eventos..." style="background: rgba(255, 255, 255, 0.06); border: 1px solid var(--border-subtle); color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem;">
+            <select id="filtroLogsNivel" style="background: rgba(255, 255, 255, 0.06); border: 1px solid var(--border-subtle); color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem;">
+              <option value="TODOS">Todos los niveles</option>
+              <option value="CRITICAL">CRITICAL</option>
+              <option value="WARN">WARN</option>
+              <option value="INFO">INFO</option>
+            </select>
+          </div>
+        </div>
+        <div class="terminal-body" id="securityTerminalBody">
+          <!-- Se puebla dinámicamente -->
+          <div class="log-row info">
+            <span style="color: var(--text-dim);">Iniciando feed...</span>
+            <span class="log-tag info">INFO</span>
+            <span style="color: #38bdf8;">SISTEMA</span>
+            <span style="color: #cbd5e1;">Conectando con el buffer de seguridad...</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ==========================================================================
+         PESTAÑA 5: MONITOR DE PROCESOS ACTIVOS EN LA MÁQUINA
+         ========================================================================== -->
+    <div id="tab-procesos" class="tab-pane">
+      
+      <!-- Fila 1: Resumen de Hardware Host -->
+      <div class="hud-grid-2" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+        
+        <!-- CPU Host -->
+        <div class="hud-card">
+          <div class="hud-card-header">
+            <h3 class="hud-card-title"><span>💻</span> CPU Host del Sistema</h3>
+            <span class="tab-badge" id="cpuCoresBadge">-- Núcleos</span>
+          </div>
+          <div class="hud-kpi-main">
+            <span class="hud-kpi-val" id="cpuUtilHostBig">0</span>
+            <span class="hud-kpi-unit">% CARGA TOTAL</span>
+          </div>
+          <div class="meter-container" style="margin-top: 10px;">
+            <div class="meter-bar">
+              <div class="meter-fill" id="cpuBarFill" style="width: 0%;"></div>
+            </div>
+          </div>
+          <p style="font-size: 0.78rem; color: var(--text-muted); margin-top: 8px;">
+            Hilos lógicos disponibles para tareas concurrentes y I/O de red.
+          </p>
+        </div>
+
+        <!-- Memoria RAM Host -->
+        <div class="hud-card">
+          <div class="hud-card-header">
+            <h3 class="hud-card-title"><span>🧠</span> Memoria RAM del Sistema</h3>
+            <span class="tab-badge" id="ramPercentBadge">--%</span>
+          </div>
+          <div class="hud-kpi-main">
+            <span class="hud-kpi-val" id="ramUsadaHostBig">0.0</span>
+            <span class="hud-kpi-unit" id="ramTotalHostUnit">/ -- GB</span>
+          </div>
+          <div class="meter-container" style="margin-top: 10px;">
+            <div class="meter-bar">
+              <div class="meter-fill" id="ramBarFill" style="width: 0%; background: linear-gradient(90deg, #34d399, #06b6d4);"></div>
+            </div>
+          </div>
+          <div class="hud-kpi-sub">
+            <span>Disponible: <strong id="ramLibreHostSub" style="color: #34d399;">-- GB</strong></span>
+            <span>Uso: <strong id="ramPercentSub" style="color: #fff;">--%</strong></span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Fila 2: Tabla de Procesos de Inferencia y Plataforma -->
+      <div class="hud-card">
+        <div class="hud-card-header">
+          <div>
+            <h3 class="hud-card-title"><span>⚙️</span> Procesos Activos de Inferencia y Plataforma (Host)</h3>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 2px;">Filtrado dinámico de Ollama, Python/Uvicorn, Docker y servicios del stack</p>
+          </div>
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <input type="text" id="filtroProcesosInput" placeholder="Buscar proceso..." style="background: rgba(255, 255, 255, 0.06); border: 1px solid var(--border-subtle); color: #fff; padding: 6px 12px; border-radius: var(--radius-sm); font-size: 0.82rem;">
+            <button id="btnRefrescarProcesos" class="btn-secondary" style="font-size: 0.82rem;">
+              <span>🔄</span> Refrescar
+            </button>
+          </div>
+        </div>
+
+        <div class="process-table-container">
+          <table class="process-table">
+            <thead>
+              <tr>
+                <th>PID</th>
+                <th>Nombre del Proceso</th>
+                <th>CPU %</th>
+                <th>Memoria RAM (MB)</th>
+                <th>Consumo Visual</th>
+                <th>Estado</th>
+              </tr>
+            </thead>
+            <tbody id="processTableBody">
+              <tr>
+                <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 24px;">Cargando procesos activos...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
 
     <!-- Footer -->
     <footer>
+
       Plataforma IA Local &copy; 2026 | Arquitectura ECC v2.0.0 | Windows 10 64-bit Offline | 100% Soberanía de Datos
     </footer>
   </div>
@@ -1495,7 +2409,417 @@
         viewDiff.style.display = "none";
         viewMarkdown.style.display = "block";
       });
+
+      // ==========================================================================
+      // 9. NAVEGACIÓN POR PESTAÑAS SENIOR-ENTERPRISE
+      // ==========================================================================
+      const navTabBtns = document.querySelectorAll(".nav-tab-btn");
+      const tabPanes = document.querySelectorAll(".tab-pane");
+
+      navTabBtns.forEach(btn => {
+        btn.addEventListener("click", () => {
+          const targetId = btn.getAttribute("data-tab");
+          navTabBtns.forEach(b => b.classList.remove("active"));
+          tabPanes.forEach(p => p.classList.remove("active"));
+          btn.classList.add("active");
+          const targetPane = document.getElementById(targetId);
+          if (targetPane) {
+            targetPane.classList.add("active");
+          }
+        });
+      });
+
+      // ==========================================================================
+      // 10. BUFFER DE HISTORIAL Y CANVAS OSCILOSCOPIO EN VIVO
+      // ==========================================================================
+      const tempHistory = [];
+      const netInHistory = [];
+      const netOutHistory = [];
+      const MAX_CHART_POINTS = 35;
+
+      function dibujarGrafico(canvasId, datos, colorStroke, colorFill, maxValDefault = 100) {
+        const canvas = document.getElementById(canvasId);
+        if (!canvas) return;
+        const ctx = canvas.getContext("2d");
+        const w = canvas.width = canvas.parentElement.clientWidth || 300;
+        const h = canvas.height = canvas.parentElement.clientHeight || 90;
+
+        ctx.clearRect(0, 0, w, h);
+        if (datos.length < 2) return;
+
+        const maxVal = Math.max(...datos, maxValDefault);
+        const step = w / (MAX_CHART_POINTS - 1);
+
+        // Dibujar relleno
+        ctx.beginPath();
+        ctx.moveTo(0, h);
+        for (let i = 0; i < datos.length; i++) {
+          const x = i * step;
+          const y = h - (datos[i] / maxVal) * (h - 10) - 5;
+          if (i === 0) ctx.lineTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.lineTo((datos.length - 1) * step, h);
+        ctx.closePath();
+        ctx.fillStyle = colorFill;
+        ctx.fill();
+
+        // Dibujar línea
+        ctx.beginPath();
+        for (let i = 0; i < datos.length; i++) {
+          const x = i * step;
+          const y = h - (datos[i] / maxVal) * (h - 10) - 5;
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.strokeStyle = colorStroke;
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      }
+
+      // ==========================================================================
+      // 11. TELEMETRÍA 360° COMPLETA (GPU, CPU, RAM, RED, PROCESOS)
+      // ==========================================================================
+      let cacheProcesos = [];
+      let cacheLogsSeguridad = [];
+
+      async function actualizarTelemetria360() {
+        const apiBase = getApiBase();
+        const t0 = performance.now();
+
+        try {
+          const res = await fetch(`${apiBase}/api/telemetria/360`, {
+            headers: { 'bypass-tunnel-reminder': 'true' }
+          });
+          const latenciaGw = Math.round(performance.now() - t0);
+          
+          if (!res.ok) return;
+          const data = await res.json();
+
+          // 1. GPU & VRAM
+          if (data.gpu) {
+            const g = data.gpu;
+            const vramPct = Math.round((g.vram_usada_mb / g.vram_total_mb) * 100);
+            
+            const vramPercentEl = document.getElementById("vramGaugePercent");
+            if (vramPercentEl) vramPercentEl.textContent = `${vramPct}%`;
+
+            const vramGauge = document.getElementById("svgGaugeVram");
+            if (vramGauge) {
+              const offset = 251.2 * (1 - vramPct / 100);
+              vramGauge.style.strokeDashoffset = offset;
+            }
+
+            const vramUsadaBig = document.getElementById("vramUsadaBig");
+            const vramLibreBig = document.getElementById("vramLibreBig");
+            const vramTotalBig = document.getElementById("vramTotalBig");
+            if (vramUsadaBig) vramUsadaBig.textContent = `${g.vram_usada_mb} MB`;
+            if (vramLibreBig) vramLibreBig.textContent = `${g.vram_libre_mb} MB`;
+            if (vramTotalBig) vramTotalBig.textContent = `${g.vram_total_mb} MB`;
+
+            const gpuMemClock = document.getElementById("gpuMemClockVal");
+            const gpuCoreClock = document.getElementById("gpuCoreClockVal");
+            const gpuPower = document.getElementById("gpuPowerVal");
+            if (gpuMemClock) gpuMemClock.textContent = `${g.clock_mem_mhz || 0} MHz`;
+            if (gpuCoreClock) gpuCoreClock.textContent = `${g.clock_gpu_mhz || 0} MHz`;
+            if (gpuPower) gpuPower.textContent = `${g.power_watts || 0} W`;
+
+            const gpuUtilBig = document.getElementById("gpuUtilBig");
+            const gpuUtilBar = document.getElementById("gpuUtilBarFill");
+            if (gpuUtilBig) gpuUtilBig.textContent = g.gpu_util_pct;
+            if (gpuUtilBar) gpuUtilBar.style.width = `${g.gpu_util_pct}%`;
+
+            // Termómetro y Alertas Térmicas
+            const gpuTempBig = document.getElementById("gpuTempBig");
+            const gpuMaxTemp = document.getElementById("gpuMaxTempBig");
+            const thermoFill = document.getElementById("thermoFillBar");
+            const thermoPill = document.getElementById("thermoStatusPill");
+            const tabGpuBadge = document.getElementById("tabGpuTempBadge");
+
+            if (gpuTempBig) gpuTempBig.textContent = g.gpu_temp_c;
+            if (gpuMaxTemp) gpuMaxTemp.textContent = `${g.max_temp_registrada_c || g.gpu_temp_c}°C`;
+            if (tabGpuBadge) {
+              tabGpuBadge.textContent = `${g.gpu_temp_c}°C`;
+              if (g.gpu_temp_c >= 82) {
+                tabGpuBadge.className = "tab-badge danger";
+              } else if (g.gpu_temp_c >= 75) {
+                tabGpuBadge.className = "tab-badge warning";
+              } else {
+                tabGpuBadge.className = "tab-badge pulse";
+              }
+            }
+
+            if (thermoFill) {
+              const clampedH = Math.min(100, Math.max(10, (g.gpu_temp_c / 95) * 100));
+              thermoFill.style.height = `${clampedH}%`;
+            }
+
+            if (thermoPill) {
+              if (g.gpu_temp_c >= 82) {
+                thermoPill.className = "thermal-status-pill critical";
+                thermoPill.innerHTML = "<span>⚠️</span> CRÍTICO (>82°C)";
+              } else if (g.gpu_temp_c >= 75) {
+                thermoPill.className = "thermal-status-pill warning";
+                thermoPill.innerHTML = "<span>⚠️</span> ELEVADO (>75°C)";
+              } else {
+                thermoPill.className = "thermal-status-pill";
+                thermoPill.innerHTML = "<span>●</span> ÓPTIMO (<65°C)";
+              }
+            }
+
+            // Histórico de Temperatura para Canvas
+            tempHistory.push(g.gpu_temp_c);
+            if (tempHistory.length > MAX_CHART_POINTS) tempHistory.shift();
+            dibujarGrafico("gpuTempChart", tempHistory, "#ef4444", "rgba(239, 68, 68, 0.15)", 90);
+          }
+
+          // 2. Tráfico de Red & I/O
+          if (data.red) {
+            const r = data.red;
+            const inKb = r.throughput_in_kbps || 0;
+            const outKb = r.throughput_out_kbps || 0;
+            const inMbps = (inKb * 8 / 1024).toFixed(2);
+            const outMbps = (outKb * 8 / 1024).toFixed(2);
+
+            const netInBig = document.getElementById("netInRateBig");
+            const netOutBig = document.getElementById("netOutRateBig");
+            const netInMbpsEl = document.getElementById("netInMbps");
+            const netOutMbpsEl = document.getElementById("netOutMbps");
+            const tabNetBadge = document.getElementById("tabNetRateBadge");
+
+            if (netInBig) netInBig.textContent = inKb.toFixed(1);
+            if (netOutBig) netOutBig.textContent = outKb.toFixed(1);
+            if (netInMbpsEl) netInMbpsEl.textContent = `${inMbps} Mbps`;
+            if (netOutMbpsEl) netOutMbpsEl.textContent = `${outMbps} Mbps`;
+            if (tabNetBadge) tabNetBadge.textContent = `${(inKb + outKb).toFixed(0)} KB/s`;
+
+            const totalMb = (r.bytes_enviados_mb + r.bytes_recibidos_mb).toFixed(1);
+            const netTotalBig = document.getElementById("netTotalMbBig");
+            const netRecvSub = document.getElementById("netRecvMbSub");
+            const netSentSub = document.getElementById("netSentMbSub");
+            const netPackets = document.getElementById("netPacketsBig");
+
+            if (netTotalBig) netTotalBig.textContent = totalMb;
+            if (netRecvSub) netRecvSub.textContent = `${r.bytes_recibidos_mb} MB`;
+            if (netSentSub) netSentSub.textContent = `${r.bytes_enviados_mb} MB`;
+            if (netPackets) netPackets.textContent = (r.paquetes_enviados + r.paquetes_recibidos).toLocaleString();
+
+            // Historial de Red para Canvas
+            netInHistory.push(inKb);
+            if (netInHistory.length > MAX_CHART_POINTS) netInHistory.shift();
+            dibujarGrafico("networkChart", netInHistory, "#06b6d4", "rgba(6, 182, 212, 0.12)", 200);
+
+            // Estado de Servicios
+            const svcGateway = document.getElementById("svcGatewayStatus");
+            if (svcGateway) svcGateway.textContent = `Online (${latenciaGw} ms)`;
+          }
+
+          // 3. CPU y RAM Host
+          if (data.cpu) {
+            const cpuBig = document.getElementById("cpuUtilHostBig");
+            const cpuBar = document.getElementById("cpuBarFill");
+            const cpuBadge = document.getElementById("cpuCoresBadge");
+            if (cpuBig) cpuBig.textContent = Math.round(data.cpu.util_pct);
+            if (cpuBar) cpuBar.style.width = `${data.cpu.util_pct}%`;
+            if (cpuBadge) cpuBadge.textContent = `${data.cpu.nucleos_logicos} Hilos (${data.cpu.nucleos_fisicos} Cores)`;
+          }
+
+          if (data.ram) {
+            const ramUsada = (data.ram.usada_mb / 1024).toFixed(1);
+            const ramTotal = (data.ram.total_mb / 1024).toFixed(1);
+            const ramLibre = (data.ram.libre_mb / 1024).toFixed(1);
+
+            const ramUsadaBig = document.getElementById("ramUsadaHostBig");
+            const ramTotalUnit = document.getElementById("ramTotalHostUnit");
+            const ramBar = document.getElementById("ramBarFill");
+            const ramLibreSub = document.getElementById("ramLibreHostSub");
+            const ramPercentSub = document.getElementById("ramPercentSub");
+            const ramBadge = document.getElementById("ramPercentBadge");
+
+            if (ramUsadaBig) ramUsadaBig.textContent = ramUsada;
+            if (ramTotalUnit) ramTotalUnit.textContent = `/ ${ramTotal} GB`;
+            if (ramBar) ramBar.style.width = `${data.ram.util_pct}%`;
+            if (ramLibreSub) ramLibreSub.textContent = `${ramLibre} GB`;
+            if (ramPercentSub) ramPercentSub.textContent = `${data.ram.util_pct}%`;
+            if (ramBadge) ramBadge.textContent = `${data.ram.util_pct}%`;
+          }
+
+          // 4. Procesos Activos
+          if (data.procesos && Array.isArray(data.procesos)) {
+            cacheProcesos = data.procesos;
+            renderTablaProcesos(cacheProcesos);
+            const tabProcBadge = document.getElementById("tabProcCountBadge");
+            if (tabProcBadge) tabProcBadge.textContent = `${data.procesos.length} proc`;
+          }
+
+        } catch (err) {
+          // Servidor offline o desconectado
+        }
+      }
+
+      // Render de Procesos
+      function renderTablaProcesos(procesos) {
+        const tbody = document.getElementById("processTableBody");
+        if (!tbody) return;
+
+        const filtro = (document.getElementById("filtroProcesosInput")?.value || "").toLowerCase().trim();
+        const filtrados = procesos.filter(p => !filtro || p.nombre.toLowerCase().includes(filtro) || String(p.pid).includes(filtro));
+
+        if (filtrados.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 18px;">No se encontraron procesos coincidentes.</td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = filtrados.map(p => {
+          const cpuW = Math.min(100, Math.round(p.cpu_pct * 2));
+          return `
+            <tr>
+              <td><span class="pid-badge">${p.pid}</span></td>
+              <td><strong>${p.nombre}</strong></td>
+              <td style="font-family: var(--font-mono);">${p.cpu_pct.toFixed(1)}%</td>
+              <td style="font-family: var(--font-mono); font-weight: 600; color: #06b6d4;">${p.memoria_mb.toFixed(1)} MB</td>
+              <td>
+                <div class="proc-bar-wrap">
+                  <div class="proc-bar"><div class="proc-bar-fill" style="width: ${cpuW}%;"></div></div>
+                  <span style="font-size: 0.72rem; color: var(--text-muted);">${cpuW}%</span>
+                </div>
+              </td>
+              <td><span class="tab-badge" style="background: rgba(16, 185, 129, 0.15); color: #34d399;">${p.estado}</span></td>
+            </tr>
+          `;
+        }).join("");
+      }
+
+      const filtroProcEl = document.getElementById("filtroProcesosInput");
+      if (filtroProcEl) {
+        filtroProcEl.addEventListener("input", () => renderTablaProcesos(cacheProcesos));
+      }
+
+      const btnRefrescarProc = document.getElementById("btnRefrescarProcesos");
+      if (btnRefrescarProc) {
+        btnRefrescarProc.addEventListener("click", actualizarTelemetria360);
+      }
+
+      // ==========================================================================
+      // 12. LOGS DE SEGURIDAD, AUDITORÍA Y DISPARO DE ALERTAS
+      // ==========================================================================
+      async function actualizarLogsSeguridad() {
+        const apiBase = getApiBase();
+        try {
+          const res = await fetch(`${apiBase}/api/seguridad/logs`, {
+            headers: { 'bypass-tunnel-reminder': 'true' }
+          });
+          if (!res.ok) return;
+          const data = await res.json();
+
+          const countCrit = document.getElementById("countAlertasCriticas");
+          const countWarn = document.getElementById("countAlertasWarnings");
+          const countTot = document.getElementById("countTotalEventos");
+          const tabSecBadge = document.getElementById("tabSecAlertsBadge");
+
+          if (countCrit) countCrit.textContent = data.alertas_criticas;
+          if (countWarn) countWarn.textContent = data.alertas_advertencias;
+          if (countTot) countTot.textContent = data.total_eventos;
+
+          if (tabSecBadge) {
+            if (data.alertas_criticas > 0) {
+              tabSecBadge.className = "tab-badge danger";
+              tabSecBadge.textContent = `${data.alertas_criticas} Críticas`;
+            } else if (data.alertas_advertencias > 0) {
+              tabSecBadge.className = "tab-badge warning";
+              tabSecBadge.textContent = `${data.alertas_advertencias} Avisos`;
+            } else {
+              tabSecBadge.className = "tab-badge pulse";
+              tabSecBadge.textContent = "Seguro";
+            }
+          }
+
+          if (data.eventos && Array.isArray(data.eventos)) {
+            cacheLogsSeguridad = data.eventos;
+            renderLogsSeguridad(cacheLogsSeguridad);
+          }
+        } catch (e) {
+          // Ignorar fallos de red
+        }
+      }
+
+      function renderLogsSeguridad(logs) {
+        const body = document.getElementById("securityTerminalBody");
+        if (!body) return;
+
+        const textoFiltro = (document.getElementById("filtroLogsTexto")?.value || "").toLowerCase().trim();
+        const nivelFiltro = document.getElementById("filtroLogsNivel")?.value || "TODOS";
+
+        const filtrados = logs.filter(l => {
+          const matchNivel = (nivelFiltro === "TODOS" || l.nivel === nivelFiltro);
+          const matchTexto = !textoFiltro || l.mensaje.toLowerCase().includes(textoFiltro) || l.categoria.toLowerCase().includes(textoFiltro);
+          return matchNivel && matchTexto;
+        });
+
+        if (filtrados.length === 0) {
+          body.innerHTML = `<div style="text-align: center; color: var(--text-dim); padding: 24px;">No hay eventos que coincidan con el filtro seleccionado.</div>`;
+          return;
+        }
+
+        body.innerHTML = filtrados.map(l => {
+          const clsNivel = l.nivel.toLowerCase();
+          const badgeNivel = l.nivel === "CRITICAL" ? "critical" : (l.nivel in {"WARN": 1, "WARNING": 1} ? "warn" : "info");
+          return `
+            <div class="log-row ${badgeNivel}">
+              <span style="color: var(--text-muted); font-size: 0.74rem;">${l.timestamp}</span>
+              <span class="log-tag ${badgeNivel}">${l.nivel}</span>
+              <span style="color: #38bdf8; font-weight: 600;">${l.categoria}</span>
+              <span style="color: #f1f5f9;">${l.mensaje}</span>
+            </div>
+          `;
+        }).join("");
+      }
+
+      const filtroTextoLogs = document.getElementById("filtroLogsTexto");
+      const filtroNivelLogs = document.getElementById("filtroLogsNivel");
+      if (filtroTextoLogs) filtroTextoLogs.addEventListener("input", () => renderLogsSeguridad(cacheLogsSeguridad));
+      if (filtroNivelLogs) filtroNivelLogs.addEventListener("change", () => renderLogsSeguridad(cacheLogsSeguridad));
+
+      // Botón Disparar Alerta de Prueba
+      const btnTestAlerta = document.getElementById("btnDispararAlertaTest");
+      if (btnTestAlerta) {
+        btnTestAlerta.addEventListener("click", async () => {
+          const apiBase = getApiBase();
+          const form = new FormData();
+          form.append("categoria", "GPU_TEMP");
+          form.append("mensaje", "Disparo manual: Verificación preventiva del sistema de alerta térmica");
+          form.append("nivel", "WARN");
+
+          try {
+            await fetch(`${apiBase}/api/seguridad/test-alerta`, { method: "POST", body: form });
+            actualizarLogsSeguridad();
+          } catch (e) {
+            alert("Error al comunicar con la API para emitir alerta de prueba.");
+          }
+        });
+      }
+
+      // Botón Exportar Bitácora JSON
+      const btnExportarLogs = document.getElementById("btnExportarLogsJson");
+      if (btnExportarLogs) {
+        btnExportarLogs.addEventListener("click", () => {
+          if (!cacheLogsSeguridad.length) return;
+          const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(cacheLogsSeguridad, null, 2));
+          const dlAnchor = document.createElement("a");
+          dlAnchor.setAttribute("href", dataStr);
+          dlAnchor.setAttribute("download", `bitacora_seguridad_ia_local_${Date.now()}.json`);
+          dlAnchor.click();
+        });
+      }
+
+      // Ejecutar ciclos de polling diferenciales de alta eficiencia
+      actualizarTelemetria360();
+      actualizarLogsSeguridad();
+
+      setInterval(actualizarTelemetria360, 2500);
+      setInterval(actualizarLogsSeguridad, 4000);
     });
   </script>
+
 </body>
 </html>

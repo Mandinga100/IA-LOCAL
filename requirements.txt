@@ -25,3 +25,7 @@ tqdm>=4.66.0
 pytest>=8.3.0
 pytest-cov>=6.0.0
 respx>=0.22.0
+
+# Telemetry & Hardware 360
+psutil>=7.0.0
+types-psutil>=7.0.0

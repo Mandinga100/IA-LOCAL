@@ -90,13 +90,57 @@ async def add_private_network_access_header(request, call_next):
     return response
 
 
+# Buffer en memoria para eventos de seguridad, alertas térmicas y auditoría (FIFO 250 eventos)
+from collections import deque
+import psutil  # type: ignore[import-untyped]
+
+_BUFFER_LOGS_SEGURIDAD: deque = deque(maxlen=250)
+_LAST_NET_IO: Optional[Any] = None
+_LAST_NET_TIME: Optional[float] = None
+_MAX_TEMP_REGISTRADA: int = 0
+
+def registrar_evento_seguridad(
+    nivel: str,
+    categoria: str,
+    mensaje: str,
+    detalles: Optional[Dict[str, Any]] = None
+) -> Dict[str, Any]:
+    """Registra un evento de seguridad o alerta en el buffer circular de auditoría."""
+    evento = {
+        "id": len(_BUFFER_LOGS_SEGURIDAD) + 1,
+        "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
+        "timestamp_iso": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+        "nivel": nivel.upper(),
+        "categoria": categoria.upper(),
+        "mensaje": mensaje,
+        "detalles": detalles or {}
+    }
+    _BUFFER_LOGS_SEGURIDAD.appendleft(evento)
+    if nivel in ("WARN", "WARNING", "ERROR", "CRITICAL"):
+        logger.warning(f"[AUDITORIA-SEGURIDAD] [{categoria}] {mensaje} - {detalles}")
+    else:
+        logger.info(f"[AUDITORIA-SEGURIDAD] [{categoria}] {mensaje}")
+    return evento
+
+# Inicializar eventos de arranque en el buffer de auditoría
+registrar_evento_seguridad(
+    "INFO", "SISTEMA", "Servidor API y Gateway inicializados correctamente",
+    {"host": "0.0.0.0", "port": 8000, "modo": "offline_industrial"}
+)
+registrar_evento_seguridad(
+    "INFO", "GOBERNANZA", "Reglas ECC de inmutabilidad criptográfica activas (SHA-256)",
+    {"rutas_blindadas": ["/ECC", "ai-harness/ecc"], "permiso": "CEO_ONLY"}
+)
+
+
 def obtener_telemetria_gpu() -> Dict[str, Any]:
     """Consulta la telemetría real de la GPU mediante nvidia-smi de forma segura."""
+    global _MAX_TEMP_REGISTRADA
     try:
         res = subprocess.run(
             [
                 "nvidia-smi",
-                "--query-gpu=name,memory.used,memory.total,utilization.gpu,temperature.gpu",
+                "--query-gpu=name,memory.used,memory.total,utilization.gpu,temperature.gpu,power.draw,clocks.gr,clocks.mem",
                 "--format=csv,noheader,nounits"
             ],
             capture_output=True,
@@ -106,14 +150,52 @@ def obtener_telemetria_gpu() -> Dict[str, Any]:
         if res.returncode == 0:
             partes = [p.strip() for p in res.stdout.strip().split(",")]
             if len(partes) >= 5:
+                vram_usada = int(partes[1])
+                vram_total = int(partes[2])
+                vram_libre = vram_total - vram_usada
+                gpu_util = int(partes[3])
+                gpu_temp = int(partes[4])
+
+                power_watts = float(partes[5]) if len(partes) > 5 and partes[5] != "[N/A]" else 0.0
+                clock_gpu_mhz = int(partes[6]) if len(partes) > 6 and partes[6] != "[N/A]" else 0
+                clock_mem_mhz = int(partes[7]) if len(partes) > 7 and partes[7] != "[N/A]" else 0
+
+                if gpu_temp > _MAX_TEMP_REGISTRADA:
+                    _MAX_TEMP_REGISTRADA = gpu_temp
+
+                # Alertas proactivas de seguridad térmica y VRAM
+                if gpu_temp >= 82:
+                    registrar_evento_seguridad(
+                        "CRITICAL", "GPU_TEMP",
+                        f"¡ALERTA CRÍTICA TÉRMICA EN GPU! Temperatura alcanzó {gpu_temp}°C (Límite 82°C)",
+                        {"temp_c": gpu_temp, "gpu_util": gpu_util, "vram_usada_mb": vram_usada}
+                    )
+                elif gpu_temp >= 75:
+                    registrar_evento_seguridad(
+                        "WARN", "GPU_TEMP",
+                        f"Temperatura elevada en GPU: {gpu_temp}°C. Monitoreo preventivo activo.",
+                        {"temp_c": gpu_temp, "gpu_util": gpu_util}
+                    )
+
+                if vram_libre < 250:
+                    registrar_evento_seguridad(
+                        "WARN", "VRAM",
+                        f"Memoria VRAM crítica: solo {vram_libre} MB libres de {vram_total} MB",
+                        {"vram_libre_mb": vram_libre, "vram_usada_mb": vram_usada}
+                    )
+
                 return {
                     "disponible": True,
                     "gpu_nombre": partes[0],
-                    "vram_usada_mb": int(partes[1]),
-                    "vram_total_mb": int(partes[2]),
-                    "vram_libre_mb": int(partes[2]) - int(partes[1]),
-                    "gpu_util_pct": int(partes[3]),
-                    "gpu_temp_c": int(partes[4])
+                    "vram_usada_mb": vram_usada,
+                    "vram_total_mb": vram_total,
+                    "vram_libre_mb": vram_libre,
+                    "gpu_util_pct": gpu_util,
+                    "gpu_temp_c": gpu_temp,
+                    "power_watts": power_watts,
+                    "clock_gpu_mhz": clock_gpu_mhz,
+                    "clock_mem_mhz": clock_mem_mhz,
+                    "max_temp_registrada_c": _MAX_TEMP_REGISTRADA
                 }
     except Exception as e:
         logger.debug(f"Telemetría GPU no disponible: {e}")
@@ -125,8 +207,94 @@ def obtener_telemetria_gpu() -> Dict[str, Any]:
         "vram_total_mb": 4096,
         "vram_libre_mb": 4096,
         "gpu_util_pct": 0,
-        "gpu_temp_c": 0
+        "gpu_temp_c": 0,
+        "power_watts": 0.0,
+        "clock_gpu_mhz": 0,
+        "clock_mem_mhz": 0,
+        "max_temp_registrada_c": _MAX_TEMP_REGISTRADA
     }
+
+
+def obtener_telemetria_360() -> Dict[str, Any]:
+    """Genera un snapshot completo 360° de GPU, CPU, RAM, Red I/O y Procesos de Máquina."""
+    global _LAST_NET_IO, _LAST_NET_TIME
+
+    # 1. GPU y Hardware
+    gpu_data = obtener_telemetria_gpu()
+
+    # 2. CPU y Memoria RAM (psutil)
+    cpu_pct = psutil.cpu_percent(interval=None)
+    cpu_cores_logical = psutil.cpu_count(logical=True) or 1
+    cpu_cores_physical = psutil.cpu_count(logical=False) or 1
+    ram = psutil.virtual_memory()
+
+    # 3. Tráfico de Red & I/O
+    ahora = time.time()
+    net_io = psutil.net_io_counters()
+    kbps_in = 0.0
+    kbps_out = 0.0
+
+    if _LAST_NET_IO and _LAST_NET_TIME and (ahora > _LAST_NET_TIME):
+        delta_t = ahora - _LAST_NET_TIME
+        bytes_recv_delta = max(0, net_io.bytes_recv - _LAST_NET_IO.bytes_recv)
+        bytes_sent_delta = max(0, net_io.bytes_sent - _LAST_NET_IO.bytes_sent)
+        kbps_in = round((bytes_recv_delta / 1024) / delta_t, 2)
+        kbps_out = round((bytes_sent_delta / 1024) / delta_t, 2)
+
+    _LAST_NET_IO = net_io
+    _LAST_NET_TIME = ahora
+
+    # 4. Procesos Activos Relevantes en la Máquina
+    procesos_relevantes: List[Dict[str, Any]] = []
+    PATRONES_PROCESOS = ("ollama", "python", "uvicorn", "docker", "containerd", "wsl", "anythingllm")
+
+    try:
+        for proc in psutil.process_iter(['pid', 'name', 'cpu_percent', 'memory_info', 'status']):
+            try:
+                p_name = (proc.info['name'] or "").lower()
+                if any(pat in p_name for pat in PATRONES_PROCESOS):
+                    mem_mb = round(proc.info['memory_info'].rss / (1024 * 1024), 1)
+                    procesos_relevantes.append({
+                        "pid": proc.info['pid'],
+                        "nombre": proc.info['name'],
+                        "cpu_pct": proc.info['cpu_percent'] or 0.0,
+                        "memoria_mb": mem_mb,
+                        "estado": proc.info['status']
+                    })
+            except (psutil.NoSuchProcess, psutil.AccessDenied):
+                continue
+    except Exception as e:
+        logger.debug(f"Error listando procesos: {e}")
+
+    # Ordenar procesos por consumo de RAM descendente (top 15)
+    procesos_relevantes.sort(key=lambda x: x["memoria_mb"], reverse=True)
+    procesos_relevantes = procesos_relevantes[:15]
+
+    return {
+        "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
+        "gpu": gpu_data,
+        "cpu": {
+            "util_pct": cpu_pct,
+            "nucleos_logicos": cpu_cores_logical,
+            "nucleos_fisicos": cpu_cores_physical
+        },
+        "ram": {
+            "total_mb": round(ram.total / (1024 * 1024), 1),
+            "usada_mb": round(ram.used / (1024 * 1024), 1),
+            "libre_mb": round(ram.available / (1024 * 1024), 1),
+            "util_pct": ram.percent
+        },
+        "red": {
+            "bytes_enviados_mb": round(net_io.bytes_sent / (1024 * 1024), 2),
+            "bytes_recibidos_mb": round(net_io.bytes_recv / (1024 * 1024), 2),
+            "throughput_in_kbps": kbps_in,
+            "throughput_out_kbps": kbps_out,
+            "paquetes_enviados": net_io.packets_sent,
+            "paquetes_recibidos": net_io.packets_recv
+        },
+        "procesos": procesos_relevantes
+    }
+
 
 @app.get("/")
 async def root() -> FileResponse:
@@ -136,8 +304,41 @@ async def root() -> FileResponse:
         raise HTTPException(status_code=404, detail="Interfaz frontend no encontrada.")
     return FileResponse(str(index_path))
 
+@app.get("/api/telemetria/360")
+async def telemetria_360() -> JSONResponse:
+    """Snapshot integral 360° de GPU, CPU, RAM, Red I/O y procesos activos del sistema."""
+    return JSONResponse(content=obtener_telemetria_360())
+
+@app.get("/api/seguridad/logs")
+async def seguridad_logs() -> JSONResponse:
+    """Retorna los eventos de auditoría y seguridad registrados en el buffer en memoria."""
+    logs_lista = list(_BUFFER_LOGS_SEGURIDAD)
+    alertas_criticas = sum(1 for l in logs_lista if l.get("nivel") == "CRITICAL")
+    alertas_warnings = sum(1 for l in logs_lista if l.get("nivel") in ("WARN", "WARNING"))
+
+    return JSONResponse(
+        content={
+            "total_eventos": len(logs_lista),
+            "alertas_criticas": alertas_criticas,
+            "alertas_advertencias": alertas_warnings,
+            "max_temp_registrada_c": _MAX_TEMP_REGISTRADA,
+            "eventos": logs_lista
+        }
+    )
+
+@app.post("/api/seguridad/test-alerta")
+async def emitir_alerta_prueba(
+    categoria: str = Form("GPU_TEMP"),
+    mensaje: str = Form("Prueba manual de disparo de alerta térmica"),
+    nivel: str = Form("WARN")
+) -> JSONResponse:
+    """Endpoint administrativo para emitir eventos de prueba hacia el feed de seguridad."""
+    evento = registrar_evento_seguridad(nivel, categoria, mensaje, {"simulado": True})
+    return JSONResponse(content={"status": "ok", "evento": evento})
+
 @app.get("/api/salud")
 async def salud() -> JSONResponse:
+
     """Verifica la conectividad con Ollama, lista modelos, perfiles y telemetría de hardware."""
     url_ollama = "http://localhost:11434/api/tags"
     modelos: List[str] = []
