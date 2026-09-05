@@ -1,1 +1,0 @@
-Este es un texto de prueba desde la app alojada en Firebase para verificar la conexion con Ollama.

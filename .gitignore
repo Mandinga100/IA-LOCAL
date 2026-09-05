@@ -1,54 +1,94 @@
-# Entornos virtuales
+# ==============================================================================
+# Git Ignore - Plataforma IA Local / AnythingLLM Monorepo
+# ==============================================================================
+
+# Node.js Dependencies
+node_modules/
+**/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# Python Environments & Cache
 .venv/
+**/.venv/
 env/
 venv/
 ENV/
-
-# Node.js y dependencias de frontend
-node_modules/
-**/node_modules/
-dist/
-build/
-
-# Byte-compiled / optimizados
 __pycache__/
+**/__pycache__/
 *.py[cod]
 *$py.class
-*.pyc
-
-# Pruebas y cobertura
+*.so
 .pytest_cache/
+**/.pytest_cache/
 .coverage
-.coverage.*
 htmlcov/
-coverage/
 
-# Respaldos pesados y binarios comprimidos (preservar README en backup/)
-backup/*.tar.gz
-backup/*.zip
-backup/*.tar
+# Local Environment Variables & Secrets
+.env
+**/.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+!.env.example
+!**/.env.example
+!**/.env.docker.example
 
-# Almacenamiento dinámico de Docker y sesiones
-docker_storage/
-docker_storage_prod/
+# AI Model Weights & LLM Binaries (>50MB / GitHub Limit 100MB)
+*.gguf
+**/*.gguf
+*.bin
+**/*.bin
+*.safetensors
+**/*.safetensors
+*.onnx
+*.pt
+poc_llama_server/
+**/poc_llama_server/
+AnythingLLM/Base/poc_llama_server/
 
-# Datos dinámicos y temporales de ejecución
-datos/salida/*
-!datos/salida/.gitkeep
-datos/salida_web/*
-!datos/salida_web/.gitkeep
-datos/errores/*
-!datos/errores/.gitkeep
-datos/assets/*
-!datos/assets/.gitkeep
+# Large Backups & Binary Archives (>50MB / GitHub Limit 100MB)
+*.zip
+**/*.zip
+*.tar.gz
+**/*.tar.gz
+*.tar
+**/*.tar
+*.7z
+*.rar
+backup/
+**/backup/
+AnythingLLM/backup/
+AnythingLLM/Base/backup/
 
-# Logs
-logs/*.log
-*.log
+# Local Databases & Vector Stores
+server/storage/*.db
+server/storage/*.db-journal
+server/storage/lancedb/
+AnythingLLM/server/storage/*.db
+AnythingLLM/server/storage/*.db-journal
+AnythingLLM/server/storage/lancedb/
 
-# IDEs y configuración local
-.vscode/
-.idea/
+# Build & Dist Outputs
+dist/
+build/
+out/
+.next/
+
+# IDE & OS Metadata
 .DS_Store
 Thumbs.db
-.firebase/
+*.bak
+*.tmp
+*.swp
+.idea/
+
+# Local Logs
+*.log
+logs/
+AnythingLLM/logs/*.log
+AnythingLLM/Base/logs/*.log

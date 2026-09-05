@@ -1,0 +1,17 @@
+{
+  "name": "plataforma-ia-local-workspace",
+  "version": "1.0.0",
+  "description": "Workspace raíz para la Plataforma de Procesamiento y Corrección de Documentos con IA Local & AnythingLLM",
+  "private": true,
+  "scripts": {
+    "start:all": "powershell -ExecutionPolicy Bypass -File \"AnythingLLM/Base/scripts/iniciar_plataforma_completa.ps1\"",
+    "start:all:linux": "bash AnythingLLM/Base/scripts/iniciar_plataforma_completa.sh",
+    "dev:base": "cd AnythingLLM\\Base && .\\.venv\\Scripts\\python.exe servidor_api.py",
+    "sync:workspaces": "cd AnythingLLM\\Base && .\\.venv\\Scripts\\python.exe scripts\\sincronizar_workspaces.py",
+    "test:base": "cd AnythingLLM\\Base && .\\.venv\\Scripts\\python.exe -m pytest tests/ -v",
+    "dev": "cd AnythingLLM && npm run dev",
+    "dev:server": "cd AnythingLLM/server && yarn dev",
+    "dev:frontend": "cd AnythingLLM/frontend && yarn dev",
+    "dev:collector": "cd AnythingLLM/collector && yarn dev"
+  }
+}
